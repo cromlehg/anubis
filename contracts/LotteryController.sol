@@ -1,12 +1,14 @@
 pragma solidity ^0.4.24;
 
-import './ownership/PercentRateProvider.sol';
 import './ownership/Ownable.sol';
 import './math/SafeMath.sol';
+import './Lottery.sol';
 
-contract LotteryController is OWnable, PercentRateProvider {
+contract LotteryController is Ownable {
 
   using SafeMath for uint;
+
+  uint public PERCENT_RATE = 100;
 
   address[] public lotteries;
 
@@ -14,37 +16,50 @@ contract LotteryController is OWnable, PercentRateProvider {
 
   address public feeWallet;
 
-  address public feePercent;
+  uint public feePercent;
 
   function setFeeWallet(address newFeeWallet) public onlyOwner {
     feeWallet = newFeeWallet;
   }
 
-  function setFeePercent(address newFeePercent) public onlyOwner {
+  function setFeePercent(uint newFeePercent) public onlyOwner {
     feePercent = newFeePercent;
   }
 
-  function newLottery(uint period) public onlyOwner return(address) {
+  function newLottery(uint period) public onlyOwner returns(address) {
     return newFutureLottery(now, period);
   } 
 
-  function newFutureLottery(uint start, uint period) public onlyOwner return(address) {
-    return newCustomFutureLottery(now, period, feeWallet, feePercent);
+  function newFutureLottery(uint start, uint period) public onlyOwner returns(address) {
+    return newCustomFutureLottery(start, period, feeWallet, feePercent);
   } 
 
   function newCustomFutureLottery(uint start, uint period, address cFeeWallet, uint cFeePercent) public onlyOwner returns(address) {
-    require(start + period > now) && feePercent < PERCENT_RATE);
+    require(start + period > now && feePercent < PERCENT_RATE);
     Lottery lottery = new Lottery();
     lottery.setStart(start);
     lottery.setPeriod(period);
     lottery.setFeeWallet(cFeeWallet);
     lottery.setFeePercent(cFeePercent);
-    lotetry.lock();
+    lottery.startLottery();
     lotteries.push(lottery);
   }
 
-  function finishLottery(address lotAddr) public onlyOwner {
-    // TODO:
+  function processFinishLottery(address lotAddr) public onlyOwner returns(bool) {
+    Lottery lot = Lottery(lotAddr);
+    if(lot.state() == Lottery.LotteryState.Accepting ||
+         lot.state() == Lottery.LotteryState.Processing) {
+      lot.prepareToRewardProcess();
+    } else if(lot.state() == Lottery.LotteryState.Processing) {
+      lot.processReward(); 
+      if(lot.state() == Lottery.LotteryState.Finished) {
+        finishedLotteries.push(lotAddr);
+        return true;
+      }
+    } else {
+      revert();
+    }
+    return false;
   }
 
 }

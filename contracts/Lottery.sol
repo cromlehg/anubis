@@ -1,18 +1,29 @@
 pragma solidity ^0.4.24;
 
-import './Lockabale.sol';
-import './PercentRateProvider.sol';
+import './ownership/Ownable.sol';
 import './math/SafeMath.sol';
 
-contract Lottery is Lockabale, PercentRateProvier {
+contract Lottery is Ownable {
 
   using SafeMath for uint;
+
+  uint public LIMIT = 100;
+
+  uint public RANGE = 1000000000;
+
+  uint public MIN_INVEST_LIMIT = 100000000000000000;
+
+  uint public PERCENT_RATE = 1000;
+
+  uint public index;
 
   uint public start;
 
   uint public period;
 
   uint public feePercent;
+
+  uint public summaryNumbers;
  
   address public feeWallet;
 
@@ -20,8 +31,26 @@ contract Lottery is Lockabale, PercentRateProvier {
 
   address[] investors;
 
-  modifier investFininshed() {
+  mapping(address => uint) public numbers;
+
+  mapping(address => uint) public winBalances;
+
+  enum LotteryState { Init, Accepting, Processing, Rewarding, Finished }
+
+  LotteryState public state;
+
+  modifier investPeriodFininshed() {
     require(start + period * 1 days > now);
+    _;
+  }
+
+  modifier initState() {
+    require(state == LotteryState.Init);
+    _;
+  }
+
+  modifier acceptingState() {
+    require(state == LotteryState.Accepting);
     _;
   }
 
@@ -30,24 +59,32 @@ contract Lottery is Lockabale, PercentRateProvier {
     _;
   }
 
-  function setFeeWallet(uint newFeeWallet) public onlyOwner notLocked {
+  function setFeeWallet(address newFeeWallet) public onlyOwner initState {
     feeWallet = newFeeWallet;
   }
 
-  function setStart(uint newStart) public onlyOwner notLocked {
+  function setStart(uint newStart) public onlyOwner initState {
     start = newStart;
   }
 
-  function setPerido(uint newPeriod) public onlyOwner notLocked {
+  function setPeriod(uint newPeriod) public onlyOwner initState {
     period = newPeriod;
   }
 
-  function setFeePercent(uint newFeePercent) public onlyOwner notLocked {
+  function setFeePercent(uint newFeePercent) public onlyOwner initState {
     require(newFeePercent < PERCENT_RATE);
     feePercent = newFeePercent;
   }
 
-  function () public payable locked investTime {
+  function startLottery() public onlyOwner {
+    require(state == LotteryState.Init);
+    state = LotteryState.Accepting;
+  }
+
+  function () public payable investTime acceptingState {
+    require(msg.value >= MIN_INVEST_LIMIT);
+    require(RANGE.mul(RANGE) > investors.length);
+    require(RANGE.mul(RANGE).mul(address(this).balance.add(msg.value)) > 0);
     uint invest = invested[msg.sender];
     if(invest == 0) {
       investors.push(msg.sender);
@@ -55,9 +92,61 @@ contract Lottery is Lockabale, PercentRateProvier {
     invested[msg.sender] = invest.add(msg.value);
   }
 
-  function finish() public onlyOwner locked investFininshed {
-    wallet.transfer(this.balance.mul(PERCENT_RATE).div(feePercent));
-    // TODO
+  function prepareToRewardProcess() public investPeriodFininshed onlyOwner {
+    if(state == LotteryState.Accepting) {
+      state = LotteryState.Processing;
+    } 
+
+    require(state == LotteryState.Processing);
+
+    uint limit = investors.length - index;
+    if(limit > LIMIT) {
+      limit = LIMIT;
+    }
+
+    uint number = block.number;
+
+    for(; index < limit; index++) {
+      number = uint(keccak256(number))%RANGE;
+      numbers[investors[index]] = number;
+      summaryNumbers = summaryNumbers.add(number);
+    }
+
+    if(index == investors.length) {
+      feeWallet.transfer(address(this).balance.mul(PERCENT_RATE).div(feePercent));
+      state = LotteryState.Rewarding;
+      index = 0;
+    }
+
+  }
+
+  function processReward() public onlyOwner {    
+    require(state == LotteryState.Rewarding);
+
+    uint limit = investors.length - index;
+    if(limit > LIMIT) {
+      limit = LIMIT;
+    }
+
+    for(; index < limit; index++) {
+      address investor = investors[index];
+      uint number = numbers[investor];
+      if(number > 0) {
+        winBalances[investor] = address(this).balance.mul(summaryNumbers).div(number);
+      }
+    }
+
+    if(index == investors.length) {
+      state = LotteryState.Finished;
+    }
+   
+  }
+
+  function reward() public {
+    require(state == LotteryState.Finished);
+    uint winBalance = winBalances[msg.sender];
+    winBalances[msg.sender] = 0;
+    msg.sender.transfer(winBalance);
   }
 
 }
