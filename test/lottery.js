@@ -1,6 +1,7 @@
 import ownable from './lottery/ownable';
 import init from './lottery/init';
 import main from './lottery/main';
+import reward from './lottery/reward';
 
 const lottery = artifacts.require('Lottery.sol');
 
@@ -14,4 +15,8 @@ contract('Lottery - init test', function (accounts) {
 
 contract('Lottery - main test', function (accounts) {
   main(lottery, accounts);
+});
+
+contract('Lottery - reward test', function (accounts) {
+  reward(lottery, accounts);
 });
