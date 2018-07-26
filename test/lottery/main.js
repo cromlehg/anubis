@@ -60,8 +60,20 @@ export default function (Lottery, wallets) {
     await lottery.sendTransaction({value: ether(1), from: wallets[5]}).should.be.fulfilled;
   });
 
+  it ('should not accept payments less then minimal investment', async function () {
+    const mininvest = await lottery.MIN_INVEST_LIMIT();
+    await lottery.sendTransaction({value: mininvest - ether(0.01), from: wallets[3]}).should.be.rejectedWith(EVMRevert);
+    await lottery.sendTransaction({value: mininvest, from: wallets[4]}).should.be.fulfilled;
+  });
+
+  it ('should add invest balances', async function () {
+    await lottery.sendTransaction({value: ether(1), from: wallets[3]}).should.be.fulfilled;
+    const balance = await lottery.invested(wallets[3]);
+    balance.should.be.bignumber.equal(ether(1));
+  });
+
   it ('should not accept payments after finish time period', async function () {
-    await increaseTimeTo(this.start + duration.days(this.period) + duration.seconds(10));
+    await increaseTimeTo(this.start + duration.days(this.period) + duration.seconds(30));
     await lottery.sendTransaction({value: ether(1), from: wallets[5]}).should.be.rejectedWith(EVMRevert);
   });
 
