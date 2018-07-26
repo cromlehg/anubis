@@ -107,13 +107,13 @@ contract Lottery is Ownable {
     uint number = block.number;
 
     for(; index < limit; index++) {
-      number = uint(keccak256(number))%RANGE;
+      number = uint(keccak256(abi.encodePacked(number)))%RANGE;
       numbers[investors[index]] = number;
       summaryNumbers = summaryNumbers.add(number);
     }
 
     if(index == investors.length) {
-      feeWallet.transfer(address(this).balance.mul(PERCENT_RATE).div(feePercent));
+      feeWallet.transfer(address(this).balance.mul(feePercent).div(PERCENT_RATE));
       state = LotteryState.Rewarding;
       index = 0;
     }
@@ -132,7 +132,7 @@ contract Lottery is Ownable {
       address investor = investors[index];
       uint number = numbers[investor];
       if(number > 0) {
-        winBalances[investor] = address(this).balance.mul(summaryNumbers).div(number);
+        winBalances[investor] = address(this).balance.mul(number).div(summaryNumbers);
       }
     }
 
