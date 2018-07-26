@@ -55,7 +55,7 @@ contract Lottery is Ownable {
   }
 
   modifier investTime() {
-    require(start + period * 1 days < now && start >= now);
+    require(now >= start && now <= start + period * 1 days);
     _;
   }
 
