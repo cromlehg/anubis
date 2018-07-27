@@ -106,6 +106,8 @@ contract Lottery is Ownable {
 
     uint number = block.number;
 
+    limit += index;
+
     for(; index < limit; index++) {
       number = uint(keccak256(abi.encodePacked(number)))%RANGE;
       numbers[investors[index]] = number;
@@ -127,6 +129,8 @@ contract Lottery is Ownable {
     if(limit > LIMIT) {
       limit = LIMIT;
     }
+
+    limit += index;
 
     for(; index < limit; index++) {
       address investor = investors[index];
