@@ -52,8 +52,17 @@ export default function (Lottery, wallets) {
 
     const feePre = web3.eth.getBalance(wallets[1]);
     await increaseTimeTo(this.start + duration.days(this.period) + duration.seconds(30));
-    await lottery.prepareToRewardProcess({from: wallets[0]}).should.be.fulfilled;
-    await lottery.processReward({from: wallets[0]}).should.be.fulfilled;
+
+    var state = await lottery.state();
+    while (state != 3) {
+      await lottery.prepareToRewardProcess({from: wallets[0]}).should.be.fulfilled;
+      state = await lottery.state();
+    }  
+
+    while (state != 4) {
+      await lottery.processReward({from: wallets[0]}).should.be.fulfilled;
+      state = await lottery.state();
+    }
 
     const feePost = web3.eth.getBalance(wallets[1]);
     feePost.minus(feePre).should.be.bignumber.equal(investment.mul(this.percent).div(1000));
