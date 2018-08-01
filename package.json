@@ -21,7 +21,10 @@
   "devDependencies": {},
   "scripts": {
     "compile": " rm -rf ./build && ./node_modules/.bin/truffle compile",
-    "test": "./scripts/test.sh"
+    "test": "./scripts/test.sh",
+    "flatten": "npm run flatten-controller && npm run flatten-lottery",
+    "flatten-controller": "./node_modules/.bin/truffle-flattener ./contracts/LotteryController.sol > ./deploy/LotteryController.sol",
+    "flatten-lottery": "./node_modules/.bin/truffle-flattener ./contracts/Lottery.sol > ./deploy/Lottery.sol"
   },
   "repository": {
     "type": "git",
