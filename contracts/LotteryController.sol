@@ -47,29 +47,19 @@ contract LotteryController is Ownable {
 
   function processFinishLottery(address lotAddr) public onlyOwner returns(bool) {
     Lottery lot = Lottery(lotAddr);
-    
-    if(lot.state() == Lottery.LotteryState.Accepting) {
-      do {
-        lot.prepareToRewardProcess();
-      } while (lot.state() != Lottery.LotteryState.Rewarding);
-    } 
-      
-    if(lot.state() == Lottery.LotteryState.Rewarding) {
-      do {
-        lot.processReward();
-      } while (lot.state() != Lottery.LotteryState.Finished);
-    }
-      
-    if(lot.state() == Lottery.LotteryState.Finished) {
-      finishedLotteries.push(lotAddr);
-      return true;
-    }
-
-    else {
+    if(lot.state() == Lottery.LotteryState.Accepting ||
+         lot.state() == Lottery.LotteryState.Processing) {
+      lot.prepareToRewardProcess();
+    } else if(lot.state() == Lottery.LotteryState.Rewarding) {
+      lot.processReward(); 
+      if(lot.state() == Lottery.LotteryState.Finished) {
+        finishedLotteries.push(lotAddr);
+        return true;
+      }
+    } else {
       revert();
     }
-
-    return false;  
+    return false;
   }
 
 }
