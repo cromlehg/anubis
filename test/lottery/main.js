@@ -20,7 +20,7 @@ export default function (Lottery, wallets) {
   beforeEach(async function () {
     this.start = latestTime();
     this.period = 10;
-    this.percent = 100;
+    this.percent = 20;
 
     lottery = await Lottery.new();
     await lottery.setStart(this.start);

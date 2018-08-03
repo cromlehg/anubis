@@ -20,7 +20,7 @@ export default function (Lottery, wallets) {
   beforeEach(async function () {
     this.start = latestTime();
     this.period = 10;
-    this.percent = 100;
+    this.percent = 20;
 
     lottery = await Lottery.new();
     await lottery.setStart(this.start);
@@ -65,7 +65,7 @@ export default function (Lottery, wallets) {
     }
 
     const feePost = web3.eth.getBalance(wallets[1]);
-    feePost.minus(feePre).should.be.bignumber.equal(investment.mul(this.percent).div(1000));
+    feePost.minus(feePre).should.be.bignumber.equal(investment.mul(this.percent).div(100));
 
     await lottery.reward({from: wallets[2]}).should.be.fulfilled;
     await lottery.reward({from: wallets[3]}).should.be.fulfilled;

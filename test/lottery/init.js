@@ -44,10 +44,10 @@ export default function (Lottery, wallets) {
 
   it ('should set fee percent', async function () {
     const percentrate = await lottery.PERCENT_RATE();
-    await lottery.setFeePercent(percentrate - 10);
+    await lottery.setFeePercent(percentrate - 1);
     const feepercent = await lottery.feePercent();
-    assert.equal(percentrate - 10, feepercent);
-    await lottery.setFeePercent(percentrate + 10).should.be.rejectedWith(EVMRevert);
+    assert.equal(percentrate - 1, feepercent);
+    await lottery.setFeePercent(percentrate + 1).should.be.rejectedWith(EVMRevert);
   });
 
   it ('should not accept payments before start', async function () {

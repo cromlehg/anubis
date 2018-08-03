@@ -13,7 +13,7 @@ contract Lottery is Ownable {
 
   uint public MIN_INVEST_LIMIT = 100000000000000000;
 
-  uint public PERCENT_RATE = 1000;
+  uint public PERCENT_RATE = 100;
 
   uint public index;
 
