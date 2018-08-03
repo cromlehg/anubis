@@ -22,6 +22,12 @@ https://ropsten.etherscan.io/tx/0x2a22a9ef0895a888907fd243dd90d1236eae27b63f325d
 * newLottery, gas = 934240
 https://ropsten.etherscan.io/tx/0x7b99544a35218c6919805e7d64679c9d631ece9da2c53d407215660192b1d0fc
 
+* processFinishLottery, gas = 191965
+https://ropsten.etherscan.io/tx/0xb4473058a49fe08c84046c973207807bf013ea738c22167d01dfc42905dedd57
+
+* processFinishLottery, gas = 181243
+https://ropsten.etherscan.io/tx/0xefbfdacfb86109416faaf68ecd5b0267c3f6726d03ecdf5f6e55c696c565c708
+
 ##### Investors
 
 * 0.2 ETH, gas = 84648
@@ -35,3 +41,17 @@ https://ropsten.etherscan.io/tx/0x479a23a9e24fe7fdb66eb6ea763120fb633ac20e54be49
 
 * 0.1 ETH, gas = 69648
 https://ropsten.etherscan.io/tx/0xd10a69306ea44cf796aeab8f54abf4264c76b7cc649b0089ba38567060b9d14b
+
+* 0.1 ETH => rejected txn, lottery period is finished, gas = 21726
+https://ropsten.etherscan.io/tx/0xd1e849fc8e6845abb6206bacb3464a069eca17c6b62db442356f7b7d6e002c1d
+
+##### Reward
+
+* reward, gas = 19508
+https://ropsten.etherscan.io/tx/0x127a667b032df80d1aef85bace8d95066f49130a098766e0dd7d415079c025c6
+
+* reward, gas = 19508
+https://ropsten.etherscan.io/tx/0x777017fe27a8c8ba8fb6126713964797aa157bb22c649e536531dab5581c4756
+
+* reward, gas = 19508
+https://ropsten.etherscan.io/tx/0x87599b9e6ce882f4e956728d2869783da6af252faaa34c7ab0405d5ad1009863
