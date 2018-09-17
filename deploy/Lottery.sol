@@ -155,7 +155,7 @@ contract Lottery is Ownable {
   LotteryState public state;
 
   modifier investPeriodFininshed() {
-    require(start + period * 1 days < now);
+    require(start + period < now);
     _;
   }
 
@@ -170,7 +170,7 @@ contract Lottery is Ownable {
   }
 
   modifier investTime() {
-    require(now >= start && now <= start + period * 1 days);
+    require(now >= start && now <= start + period);
     _;
   }
 
