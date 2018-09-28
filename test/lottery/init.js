@@ -31,15 +31,15 @@ export default function (Lottery, wallets) {
   }); 
 
   it ('should set start', async function () {
-    await lottery.setStart(1537867800);
+    await lottery.setStart(1569403800);
     const start = await lottery.start();
-    assert.equal(1537867800, start);
+    assert.equal(1569403800, start);
   });
 
   it ('should set period', async function () {
-    await lottery.setPeriod(10);
+    await lottery.setPeriod(1000);
     const period = await lottery.period();
-    assert.equal(10, period);
+    assert.equal(1000, period);
   });
 
   it ('should set fee percent', async function () {
@@ -48,6 +48,12 @@ export default function (Lottery, wallets) {
     const feepercent = await lottery.feePercent();
     assert.equal(percentrate - 1, feepercent);
     await lottery.setFeePercent(percentrate + 1).should.be.rejectedWith(EVMRevert);
+  });
+
+  it ('should set TicketPrice', async function () {
+    await lottery.setTicketPrice(50000);
+    const ticketPrice = await lottery.ticketPrice();
+    assert.equal(50000, ticketPrice);
   });
 
   it ('should not accept payments before start', async function () {

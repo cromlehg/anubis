@@ -20,54 +20,38 @@ export default function (LotteryController, Lottery, wallets) {
 
   beforeEach(async function () {
     this.start = latestTime();
-    this.period = 10;
-    this.percent = 10;
+    this.period = 1000;
+    this.percent = 20;
+    this.ticketPrice = 200000000000000000;
 
     controller = await LotteryController.new();
     await controller.setFeeWallet(wallets[1]);
     await controller.setFeePercent(this.percent);
-    await controller.newLottery(this.period);
+    await controller.newLottery(this.period, this.ticketPrice);
 
     const lotteryAddress = await controller.lotteries(0);
 
     lottery = await Lottery.at(lotteryAddress);
   });
 
-  it ('should collect investitions', async function () {
-    const inv1 = ether(10);
-    const inv2 = ether(4);
-    const inv3 = ether(80);
-    const inv4 = ether(6);
-    await lottery.sendTransaction({value: inv1, from: wallets[2]}).should.be.fulfilled;
-    await lottery.sendTransaction({value: inv2, from: wallets[3]}).should.be.fulfilled;
-    await lottery.sendTransaction({value: inv3, from: wallets[4]}).should.be.fulfilled;
-    await lottery.sendTransaction({value: inv4, from: wallets[5]}).should.be.fulfilled;
-    const investment = inv1.add(inv2).add(inv3).add(inv4);
-    const balance = web3.eth.getBalance(lottery.address);
-    balance.should.be.bignumber.equal(investment);
-  });
+  
+  it ('should start and finish lottery', async function () {
+    const ticketPrice = await lottery.ticketPrice();
 
-  it ('should reward', async function () {
-    const inv1 = ether(10);
-    const inv2 = ether(4);
-    const inv3 = ether(80);
-    const inv4 = ether(6);
-    await lottery.sendTransaction({value: inv1, from: wallets[2]}).should.be.fulfilled;
-    await lottery.sendTransaction({value: inv2, from: wallets[3]}).should.be.fulfilled;
-    await lottery.sendTransaction({value: inv3, from: wallets[4]}).should.be.fulfilled;
-    await lottery.sendTransaction({value: inv4, from: wallets[5]}).should.be.fulfilled;
-    await increaseTimeTo(this.start + duration.days(this.period) + duration.seconds(30));
-        
+    await lottery.sendTransaction({value: ticketPrice, from: wallets[2]}).should.be.fulfilled;
+    await lottery.sendTransaction({value: ticketPrice, from: wallets[3]}).should.be.fulfilled;
+    await lottery.sendTransaction({value: ticketPrice, from: wallets[4]}).should.be.fulfilled;
+    
+    await increaseTimeTo(this.start + duration.seconds(this.period) + duration.seconds(30));
+       
     var state = await lottery.state();
+
     while (state != 4) {
+      console.log(state);
       await controller.processFinishLottery(lottery.address);
       state = await lottery.state();
     }
 
-    await lottery.reward({from: wallets[2]}).should.be.fulfilled;
-    await lottery.reward({from: wallets[3]}).should.be.fulfilled;
-    await lottery.reward({from: wallets[4]}).should.be.fulfilled;
-    await lottery.reward({from: wallets[5]}).should.be.fulfilled;
   }); 
 
 }
