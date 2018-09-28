@@ -33,7 +33,7 @@ contract LotteryController is Ownable {
   } 
 
   function newFutureLottery(uint start, uint period, uint ticketPrice) public onlyOwner returns(address) {
-    return newCustomFutureLottery(start, ticketPrice, period, feeWallet, feePercent);
+    return newCustomFutureLottery(start, period, ticketPrice, feeWallet, feePercent);
   } 
 
   function newCustomFutureLottery(uint start, uint period, uint ticketPrice, address cFeeWallet, uint cFeePercent) public onlyOwner returns(address) {
