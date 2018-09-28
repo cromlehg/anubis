@@ -1,5 +1,57 @@
 pragma solidity ^0.4.24;
 
+// File: contracts/math/SafeMath.sol
+
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that throw on error
+ */
+library SafeMath {
+
+  /**
+  * @dev Multiplies two numbers, throws on overflow.
+  */
+  function mul(uint256 a, uint256 b) internal pure returns (uint256 c) {
+    // Gas optimization: this is cheaper than asserting 'a' not being zero, but the
+    // benefit is lost if 'b' is also tested.
+    // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
+    if (a == 0) {
+      return 0;
+    }
+
+    c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  /**
+  * @dev Integer division of two numbers, truncating the quotient.
+  */
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    // uint256 c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return a / b;
+  }
+
+  /**
+  * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  */
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  /**
+  * @dev Adds two numbers, throws on overflow.
+  */
+  function add(uint256 a, uint256 b) internal pure returns (uint256 c) {
+    c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
+
 // File: contracts/ownership/Ownable.sol
 
 /**
@@ -64,58 +116,6 @@ contract Ownable {
   }
 }
 
-// File: contracts/math/SafeMath.sol
-
-/**
- * @title SafeMath
- * @dev Math operations with safety checks that throw on error
- */
-library SafeMath {
-
-  /**
-  * @dev Multiplies two numbers, throws on overflow.
-  */
-  function mul(uint256 a, uint256 b) internal pure returns (uint256 c) {
-    // Gas optimization: this is cheaper than asserting 'a' not being zero, but the
-    // benefit is lost if 'b' is also tested.
-    // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
-    if (a == 0) {
-      return 0;
-    }
-
-    c = a * b;
-    assert(c / a == b);
-    return c;
-  }
-
-  /**
-  * @dev Integer division of two numbers, truncating the quotient.
-  */
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
-    // uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-    return a / b;
-  }
-
-  /**
-  * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
-  */
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    assert(b <= a);
-    return a - b;
-  }
-
-  /**
-  * @dev Adds two numbers, throws on overflow.
-  */
-  function add(uint256 a, uint256 b) internal pure returns (uint256 c) {
-    c = a + b;
-    assert(c >= a);
-    return c;
-  }
-}
-
 // File: contracts/Lottery.sol
 
 contract Lottery is Ownable {
@@ -126,7 +126,7 @@ contract Lottery is Ownable {
 
   uint public RANGE = 1000000000;
 
-  uint public MIN_INVEST_LIMIT = 100000000000000000;
+  uint public ticketPrice = 100000000000000000;
 
   uint public PERCENT_RATE = 100;
 
@@ -139,6 +139,8 @@ contract Lottery is Ownable {
   uint public feePercent;
 
   uint public summaryNumbers;
+  
+  uint public summaryInvested;
  
   address public feeWallet;
 
@@ -150,28 +152,44 @@ contract Lottery is Ownable {
 
   mapping(address => uint) public winBalances;
 
+  mapping(address => uint) public toPayBalances;
+
   enum LotteryState { Init, Accepting, Processing, Rewarding, Finished }
 
   LotteryState public state;
 
+  modifier notContract(address to) {
+    uint codeLength;
+    assembly {
+      // Retrieve the size of the code on target address, this needs assembly .
+      codeLength := extcodesize(to)
+    }
+    require(codeLength == 0, "Contracts can not participate!");
+    _;
+  }
+
   modifier investPeriodFininshed() {
-    require(start + period < now);
+    require(start + period < now, "Lottery invest period finished!");
     _;
   }
 
   modifier initState() {
-    require(state == LotteryState.Init);
+    require(state == LotteryState.Init, "Lottery should be on Init state!");
     _;
   }
 
   modifier acceptingState() {
-    require(state == LotteryState.Accepting);
+    require(state == LotteryState.Accepting, "Lottery should be on Accepting state!");
     _;
   }
 
   modifier investTime() {
-    require(now >= start && now <= start + period);
+    require(now >= start && now <= start + period, "Wrong time to invest!");
     _;
+  }
+
+  function setTicketPrice(uint newTicketPrice) public onlyOwner initState {
+    ticketPrice = newTicketPrice;
   }
 
   function setFeeWallet(address newFeeWallet) public onlyOwner initState {
@@ -196,15 +214,21 @@ contract Lottery is Ownable {
     state = LotteryState.Accepting;
   }
 
-  function () public payable investTime acceptingState {
-    require(msg.value >= MIN_INVEST_LIMIT);
-    require(RANGE.mul(RANGE) > investors.length);
-    require(RANGE.mul(RANGE).mul(address(this).balance.add(msg.value)) > 0);
+  function () public payable investTime acceptingState notContract(msg.sender) {
+    require(msg.value < ticketPrice, "Not enough funds to buy ticket!");
+    require(RANGE.mul(RANGE) > investors.length, "Player number error!");
+    require(RANGE.mul(RANGE).mul(address(this).balance.add(msg.value)) > 0, "Limit error!");
     uint invest = invested[msg.sender];
-    if(invest == 0) {
-      investors.push(msg.sender);
+    require(invest == 0, "Already invested!");
+    //if(invest == 0) {
+    investors.push(msg.sender);
+    //}
+    invested[msg.sender] = invest.add(ticketPrice);
+    summaryInvested = summaryInvested.add(ticketPrice);
+    uint diff = msg.value - ticketPrice;
+    if(diff > 0) {
+      msg.sender.transfer(diff);
     }
-    invested[msg.sender] = invest.add(msg.value);
   }
 
   function prepareToRewardProcess() public investPeriodFininshed onlyOwner {
@@ -212,7 +236,7 @@ contract Lottery is Ownable {
       state = LotteryState.Processing;
     } 
 
-    require(state == LotteryState.Processing);
+    require(state == LotteryState.Processing, "Lottery state should be Processing!");
 
     uint limit = investors.length - index;
     if(limit > LIMIT) {
@@ -238,7 +262,7 @@ contract Lottery is Ownable {
   }
 
   function processReward() public onlyOwner {    
-    require(state == LotteryState.Rewarding);
+    require(state == LotteryState.Rewarding, "Lottery state should be Rewarding!");
 
     uint limit = investors.length - index;
     if(limit > LIMIT) {
@@ -252,6 +276,7 @@ contract Lottery is Ownable {
       uint number = numbers[investor];
       if(number > 0) {
         winBalances[investor] = address(this).balance.mul(number).div(summaryNumbers);
+        investor.transfer(winBalances[investor]);
       }
     }
 
@@ -259,13 +284,6 @@ contract Lottery is Ownable {
       state = LotteryState.Finished;
     }
    
-  }
-
-  function reward() public {
-    require(state == LotteryState.Finished);
-    uint winBalance = winBalances[msg.sender];
-    winBalances[msg.sender] = 0;
-    msg.sender.transfer(winBalance);
   }
 
 }
