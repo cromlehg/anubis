@@ -24,6 +24,8 @@ contract Lottery is Ownable {
   uint public feePercent;
 
   uint public summaryNumbers;
+  
+  uint public summaryInvested;
  
   address public feeWallet;
 
@@ -106,7 +108,8 @@ contract Lottery is Ownable {
     //if(invest == 0) {
     investors.push(msg.sender);
     //}
-    invested[msg.sender] = invest.add(msg.value);
+    invested[msg.sender] = invest.add(ticketPrice);
+    summaryInvested = summaryInvested.add(ticketPrice);
     uint diff = msg.value - ticketPrice;
     if(diff > 0) {
       msg.sender.transfer(diff);
