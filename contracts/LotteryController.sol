@@ -14,9 +14,9 @@ contract LotteryController is Ownable {
 
   address[] public finishedLotteries;
 
-  address public feeWallet;
+  address public feeWallet = address(this);
 
-  uint public feePercent;
+  uint public feePercent = 5;
 
   event LotteryCreated(address newAddress);
 
@@ -64,6 +64,10 @@ contract LotteryController is Ownable {
       revert();
     }
     return false;
+  }
+
+  function retrieveEth() public onlyOwner {
+    msg.sender.transfer(address(this).balance);
   }
 
 }
