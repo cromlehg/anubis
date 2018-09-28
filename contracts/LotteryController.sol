@@ -39,7 +39,7 @@ contract LotteryController is Ownable {
   function newCustomFutureLottery(uint start, uint period, uint ticketPrice, address cFeeWallet, uint cFeePercent) public onlyOwner returns(address) {
     require(start + period > now && feePercent < PERCENT_RATE);
     Lottery lottery = new Lottery();
-    LotteryCreated(lottery);
+    emit LotteryCreated(lottery);
     lottery.setStart(start);
     lottery.setPeriod(period);
     lottery.setFeeWallet(cFeeWallet);
