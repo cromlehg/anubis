@@ -28,15 +28,15 @@ contract LotteryController is Ownable {
     feePercent = newFeePercent;
   }
 
-  function newLottery(uint period) public onlyOwner returns(address) {
-    return newFutureLottery(now, period);
+  function newLottery(uint period, uint ticketPrice) public onlyOwner returns(address) {
+    return newFutureLottery(now, period, ticketPrice);
   } 
 
-  function newFutureLottery(uint start, uint period) public onlyOwner returns(address) {
-    return newCustomFutureLottery(start, period, feeWallet, feePercent);
+  function newFutureLottery(uint start, uint period, uint ticketPrice) public onlyOwner returns(address) {
+    return newCustomFutureLottery(start, ticketPrice, period, feeWallet, feePercent);
   } 
 
-  function newCustomFutureLottery(uint start, uint period, address cFeeWallet, uint cFeePercent) public onlyOwner returns(address) {
+  function newCustomFutureLottery(uint start, uint period, uint ticketPrice, address cFeeWallet, uint cFeePercent) public onlyOwner returns(address) {
     require(start + period > now && feePercent < PERCENT_RATE);
     Lottery lottery = new Lottery();
     LotteryCreated(lottery);
@@ -44,6 +44,7 @@ contract LotteryController is Ownable {
     lottery.setPeriod(period);
     lottery.setFeeWallet(cFeeWallet);
     lottery.setFeePercent(cFeePercent);
+    lottery.setTicketPrice(ticketPrice);
     lottery.startLottery();
     lotteries.push(lottery);
   }
