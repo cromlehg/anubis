@@ -100,7 +100,7 @@ contract Lottery is Ownable {
   }
 
   function () public payable investTime acceptingState notContract(msg.sender) {
-    require(msg.value < ticketPrice, "Not enough funds to buy ticket!");
+    require(msg.value >= ticketPrice, "Not enough funds to buy ticket!");
     require(RANGE.mul(RANGE) > investors.length, "Player number error!");
     require(RANGE.mul(RANGE).mul(address(this).balance.add(msg.value)) > 0, "Limit error!");
     uint invest = invested[msg.sender];
