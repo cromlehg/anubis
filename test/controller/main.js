@@ -22,7 +22,7 @@ export default function (LotteryController, Lottery, wallets) {
     this.start = latestTime();
     this.period = 1000;
     this.percent = 20;
-    this.ticketPrice = 200000000000000000;
+    this.ticketPrice = 250000000000000000;
 
     controller = await LotteryController.new();
     await controller.setFeeWallet(wallets[1]);
@@ -47,7 +47,6 @@ export default function (LotteryController, Lottery, wallets) {
     var state = await lottery.state();
 
     while (state != 4) {
-      console.log(state);
       await controller.processFinishLottery(lottery.address);
       state = await lottery.state();
     }
