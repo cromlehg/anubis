@@ -352,6 +352,9 @@ contract LotteryController is Ownable {
     return false;
   }
 
+  function () public payable {
+  }
+
   function retrieveEth() public onlyOwner {
     msg.sender.transfer(address(this).balance);
   }
