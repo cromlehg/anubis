@@ -54,7 +54,7 @@ contract Room1 is Ownable {
   mapping(uint => Lot) public lots;
 
   modifier started() {
-    require(now < starts, "Not started yet!");
+    require(now > starts, "Not started yet!");
     _;
   }
 
