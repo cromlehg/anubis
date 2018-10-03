@@ -96,7 +96,7 @@ contract Room1 is Ownable {
   }
 
   function getNotPayableTime(uint lotIndex) view public returns(uint) {
-    return starts.add(interval.add(duration).mul(lotIndex)).sub(interval);
+    return starts.add(interval.add(duration).mul(lotIndex.add(1))).sub(interval);
   }
 
   function () public payable notContract(msg.sender) started {
