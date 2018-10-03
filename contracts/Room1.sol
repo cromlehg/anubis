@@ -55,7 +55,7 @@ contract Room1 is Ownable {
   mapping(uint => Lot) public lots;
 
   modifier started() {
-    require(now > starts, "Not started yet!");
+    require(now >= starts, "Not started yet!");
     _;
   }
 
@@ -102,7 +102,6 @@ contract Room1 is Ownable {
   function () public payable notContract(msg.sender) started {
     require(RANGE.mul(RANGE).mul(address(this).balance.add(msg.value)) > 0, "Balance limit error!");
     require(msg.value >= ticketPrice, "Not enough funds to buy ticket!");
-    require(now >= starts, "Room not starts!");
     uint curLotIndex = getCurLotIndex();
     require(now < getNotPayableTime(curLotIndex), "Game finished!");
     Lot storage lot = lots[curLotIndex];
