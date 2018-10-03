@@ -102,7 +102,7 @@ contract Room1 is Ownable {
     require(msg.value >= ticketPrice, "Not enough funds to buy ticket!");
     require(now >= starts, "Room not starts!");
     uint curLotIndex = getCurLotIndex();
-    require(now > getNotPayableTime(curLotIndex), "Game finished!");
+    require(now < getNotPayableTime(curLotIndex), "Game finished!");
     Lot storage lot = lots[curLotIndex];
     require(RANGE.mul(RANGE) > lot.ticketsCount, "Ticket count limit exceeded!");
     
@@ -127,6 +127,12 @@ contract Room1 is Ownable {
 
     uint refund = msg.value.sub(toInvest);
     msg.sender.transfer(refund);
+  }
+
+  function isProcessNeeds() view public started returns(bool) {
+    uint curLotIndex = getCurLotIndex();
+    Lot storage lot = lots[curLotIndex];
+    return lotProcessIndex < curLotIndex || (now >= getNotPayableTime(lotProcessIndex) && lot.state != LotState.Finished);
   }
 
   function prepareToRewardProcess() public onlyOwner started {
