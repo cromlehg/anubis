@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import './ownership/Ownable.sol';
 import './math/SafeMath.sol';
+import './token/ERC20Cutted.sol';
 
 contract Room1 is Ownable {
 
@@ -91,6 +92,7 @@ contract Room1 is Ownable {
     interval = 600;
     uint fullDuration = 86400;
     duration = fullDuration.sub(interval);
+    feeWallet = address(this);
   }
 
   function getNotPayableTime(uint lotIndex) view public returns(uint) {
@@ -194,6 +196,15 @@ contract Room1 is Ownable {
     } 
 
     lot.processIndex = index;
+  }
+
+  function retrieveTokens(address tokenAddr, address to) public onlyOwner {
+    ERC20Cutted token = ERC20Cutted(tokenAddr);
+    token.transfer(to, token.balanceOf(address(this)));
+  }
+
+  function retrieveEth() public onlyOwner {
+    msg.sender.transfer(address(this).balance);
   }
 
 }
