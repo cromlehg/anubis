@@ -157,7 +157,7 @@ contract Room1 is Ownable {
 
     uint number;
 
-    if(lot.state == LotState.Processing) {    
+    if(lot.state == LotState.Processing) {
 
       number = block.number;
 
@@ -168,7 +168,9 @@ contract Room1 is Ownable {
       }
 
       if(index == lot.ticketsCount) {
+        if (feeWallet != address(this)) {
         feeWallet.transfer(lot.summaryInvested.mul(feePercent).div(PERCENT_RATE));
+        }
         lot.state = LotState.Rewarding;
         index = 0;
       }
