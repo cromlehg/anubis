@@ -34,6 +34,8 @@ contract Room1 is Ownable {
 
   address public feeWallet;
 
+  mapping (address -> uint) public summaryPayed;
+
   struct Ticket {
     address owner;
     uint number;
@@ -169,7 +171,7 @@ contract Room1 is Ownable {
 
       if(index == lot.ticketsCount) {
         if (feeWallet != address(this)) {
-        feeWallet.transfer(lot.summaryInvested.mul(feePercent).div(PERCENT_RATE));
+          feeWallet.transfer(lot.summaryInvested.mul(feePercent).div(PERCENT_RATE));
         }
         lot.state = LotState.Rewarding;
         index = 0;
@@ -184,6 +186,7 @@ contract Room1 is Ownable {
           ticket.win = lot.summaryInvested.mul(number).div(lot.summaryNumbers);
           if(ticket.win > 0) {
             ticket.owner.transfer(ticket.win);
+            summaryPayed[ticket.owner] = summaryPayed[ticket.owner].add(ticket.win);
             emit TicketWin(address(this), lotProcessIndex, index, ticket.owner, ticket.win);
           }
         }
