@@ -34,7 +34,7 @@ contract Room1 is Ownable {
 
   address public feeWallet;
 
-  mapping (address -> uint) public summaryPayed;
+  mapping (address => uint) public summaryPayed;
 
   struct Ticket {
     address owner;
