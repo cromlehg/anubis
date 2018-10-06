@@ -5,7 +5,7 @@
 ## Песочница для разработки контракта лотереи
 
 
-## Ropsten test
+## Ropsten test #1
 
 ### Links
 1. _LotteryController_ - https://ropsten.etherscan.io/address/0x2d70f55800fe08a34577c0f9272f75e2629ced65
@@ -55,3 +55,33 @@ https://ropsten.etherscan.io/tx/0x777017fe27a8c8ba8fb6126713964797aa157bb22c649e
 
 * reward, gas = 19508
 https://ropsten.etherscan.io/tx/0x87599b9e6ce882f4e956728d2869783da6af252faaa34c7ab0405d5ad1009863
+
+
+## Ropsten test #2
+
+### Links
+1. _Room1_ - https://ropsten.etherscan.io/address/0x2c7c167db4e1c38672d3cd83149adb87a1756dd8
+
+
+##### Investors
+
+* 0.1 ETH, gas = 172904
+https://ropsten.etherscan.io/tx/0xf0a9b2212b15dc6ac130b231a6c8c5ad924d21d988e08cae7f0ad6e9e90d833b
+
+* 0.2 ETH, gas = 141341
+https://ropsten.etherscan.io/tx/0x7085952b8b3013e7fe984f73a7141095e9f4fcb6737fe9b54e28f16b0e944ee7
+
+* 0.01 ETH => rejected txn, less then mininal investment limit, gas = 23385
+https://ropsten.etherscan.io/tx/0x8d76d2629b058f41ada7d8adbef28d78f940da9ea48cddcddf9decad6d88233d
+
+* 0.155 ETH, gas = 119604
+https://ropsten.etherscan.io/tx/0xe5c9095696ec85b20822e9011ac7d99382561c339a987a4fea5204763201b1e0
+
+
+##### Service operations
+
+* prepareToRewardProcess, gas = 175944
+https://ropsten.etherscan.io/tx/0x8296eb2ee30ac81f2b36725bb60d45b6f048c17926c447fd98aabc86df86aa68
+
+* prepareToRewardProcess, gas = 266929
+https://ropsten.etherscan.io/tx/0x2656343b5ad5fc62bc124551b8eccc1251827881965ef819ba17e15c87152bc3
