@@ -73,7 +73,7 @@ contract Room1 is Ownable {
     _;
   }
 
-  function update(uint newFeeWallet, uint newFeePercent, uint newStarts, uint newDuration, uint newInterval, uint newTicketPrice) public onlyOwner {
+  function update(address newFeeWallet, uint newFeePercent, uint newStarts, uint newDuration, uint newInterval, uint newTicketPrice) public onlyOwner {
     require(starts > now, "Lottery can started only in future!");
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
