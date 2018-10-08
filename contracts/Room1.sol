@@ -47,6 +47,7 @@ contract Room1 is Ownable {
     uint processIndex;
     uint summaryNumbers;
     uint summaryInvested;
+    uint rewardBase;
     uint ticketsCount;
     uint playersCount;
     mapping (uint => Ticket) tickets;
@@ -94,7 +95,10 @@ contract Room1 is Ownable {
     interval = 600;
     uint fullDuration = 86400;
     duration = fullDuration.sub(interval);
-    feeWallet = address(this);
+  }
+
+  function setFeeWallet(address newFeeWallet) public onlyOwner {
+    feeWallet = newFeeWallet;
   }
 
   function getNotPayableTime(uint lotIndex) view public returns(uint) {
@@ -170,9 +174,9 @@ contract Room1 is Ownable {
       }
 
       if(index == lot.ticketsCount) {
-        if (feeWallet != address(this)) {
-          feeWallet.transfer(lot.summaryInvested.mul(feePercent).div(PERCENT_RATE));
-        }
+        uint fee = lot.summaryInvested.mul(feePercent).div(PERCENT_RATE);
+        feeWallet.transfer(fee);
+        lot.rewardBase = lot.summaryInvested.sub(fee);
         lot.state = LotState.Rewarding;
         index = 0;
       }
@@ -183,7 +187,7 @@ contract Room1 is Ownable {
         Ticket storage ticket = lot.tickets[index];
         number = ticket.number;
         if(number > 0) {
-          ticket.win = lot.summaryInvested.mul(number).div(lot.summaryNumbers);
+          ticket.win = lot.rewardBase.mul(number).div(lot.summaryNumbers);
           if(ticket.win > 0) {
             ticket.owner.transfer(ticket.win);
             summaryPayed[ticket.owner] = summaryPayed[ticket.owner].add(ticket.win);
