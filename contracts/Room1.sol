@@ -74,7 +74,7 @@ contract Room1 is Ownable {
   }
 
   function update(address newFeeWallet, uint newFeePercent, uint newStarts, uint newDuration, uint newInterval, uint newTicketPrice) public onlyOwner {
-    require(starts > now, "Lottery can started only in future!");
+    require(newStarts > now, "Lottery can started only in future!");
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
     require(lot.state == LotState.Finished, "Contract params can be changed only when current lottery finihsed!");
