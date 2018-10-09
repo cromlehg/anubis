@@ -80,6 +80,7 @@ contract Room1 is Ownable {
     require(lot.state == LotState.Finished, "Contract params can be changed only when current lottery finihsed!");
     lastChangesIndex = curLotIndex;
     feeWallet = newFeeWallet; 
+    feePercent = newFeePercent;
     starts = newStarts; 
     duration = newDuration; 
     interval = newInterval; 
@@ -224,10 +225,6 @@ contract Room1 is Ownable {
   function retrieveTokens(address tokenAddr, address to) public onlyOwner {
     ERC20Cutted token = ERC20Cutted(tokenAddr);
     token.transfer(to, token.balanceOf(address(this)));
-  }
-
-  function retrieveEth() public onlyOwner {
-    msg.sender.transfer(address(this).balance);
   }
 
 }
