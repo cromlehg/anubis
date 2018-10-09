@@ -211,9 +211,5 @@ contract Room1 is Ownable {
     token.transfer(to, token.balanceOf(address(this)));
   }
 
-  function retrieveEth() public onlyOwner {
-    msg.sender.transfer(address(this).balance);
-  }
-
 }
 
