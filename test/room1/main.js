@@ -18,27 +18,21 @@ export default function (Room, wallets) {
   });
 
   beforeEach(async function () {
+    this.percentRate = 100;
+    this.feePercent = 5;
+    this.ticketPrice = ether(0.1);
 
     room = await Room.new();
+    await room.setFeeWallet(wallets[1]);
 
   });
 
-  
-  it ('should start and finish lottery', async function () {
-    const ticketPrice = 100000000000000000;
-
-    await room.sendTransaction({value: ticketPrice, from: wallets[2]}).should.be.fulfilled;
-    await room.sendTransaction({value: ticketPrice, from: wallets[3]}).should.be.fulfilled;
-    await room.sendTransaction({value: ticketPrice, from: wallets[4]}).should.be.fulfilled;
-    await room.sendTransaction({value: ticketPrice, from: wallets[4]}).should.be.fulfilled;
-
-
+  it ('should start and finish lottery correctly without investments', async function () {
+    const balancePre = web3.eth.getBalance(wallets[1]);
     const lotIndex = await room.getCurLotIndex();
     const lotFinishTime = await room.getNotPayableTime(lotIndex);
    
     await increaseTimeTo(lotFinishTime);
-
-    await room.sendTransaction({value: ticketPrice, from: wallets[5]}).should.be.rejectedWith(EVMRevert);;
         
     var state = await room.isProcessNeeds();
 
@@ -46,6 +40,100 @@ export default function (Room, wallets) {
       await room.prepareToRewardProcess();    
       state = await room.isProcessNeeds();
     }
+
+    const balancePost = web3.eth.getBalance(wallets[1]);
+    balancePost.sub(balancePre).should.be.bignumber.equal(0);
+
+  }); 
+
+  it ('should not accept investments after current lottery finish time and before next will start', async function () {
+    await room.sendTransaction({value: this.ticketPrice, from: wallets[2]}).should.be.rejectedWith(EVMRevert);
+  });
+
+  it ('should start and finish lottery correctly with just one ticket', async function () {
+    const balancePre = web3.eth.getBalance(wallets[1]);
+    const investorBalancePre = web3.eth.getBalance(wallets[2]);
+    var lotIndex = await room.getCurLotIndex();
+    var lotFinishTime = await room.getNotPayableTime(lotIndex);
+   
+    await increaseTimeTo(lotFinishTime.add(600));    
+
+    await room.sendTransaction({value: this.ticketPrice, from: wallets[2]}).should.be.fulfilled;
+
+    lotIndex = await room.getCurLotIndex();  
+    lotFinishTime = await room.getNotPayableTime(lotIndex);   
+    await increaseTimeTo(lotFinishTime);
+
+    var state = await room.isProcessNeeds();
+
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    const balancePost = web3.eth.getBalance(wallets[1]);
+    const fee = this.ticketPrice.mul(this.feePercent).div(this.percentRate);
+    balancePost.sub(balancePre).should.be.bignumber.equal(fee);
+
+    const investorBalancePost = web3.eth.getBalance(wallets[2]);
+    const diff = investorBalancePre.sub(investorBalancePost);
+    Math.round(diff.div(10000000000)).should.be.bignumber.equal(Math.round(fee.div(10000000000)));
+
+  });
+
+  describe('should start and finish lottery correctly with investments', function () {
+    var lotIndex;
+    var lotFinishTime;
+
+    it ('should accept investments before next lottery finish time', async function () {
+      lotIndex = await room.getCurLotIndex();
+      lotFinishTime = await room.getNotPayableTime(lotIndex);
+      await increaseTimeTo(lotFinishTime.add(600));
+
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[2]}).should.be.fulfilled;
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[3]}).should.be.fulfilled;
+    });
+
+    it ('should accept investments from one investor several times', async function () {
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[4]}).should.be.fulfilled;
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[4]}).should.be.fulfilled;
+    });
+
+    it ('should accept investments just in size multiple ticket price and send back the difference', async function () {
+      const balancePre = web3.eth.getBalance(wallets[4]);
+      await room.sendTransaction({value: this.ticketPrice.mul(2).add(ether(0.09)), from: wallets[4]}).should.be.fulfilled;
+      const balancePost = web3.eth.getBalance(wallets[4]);
+      const paydEth = balancePre.sub(balancePost);
+      Math.round(paydEth.div(10000000000)).should.be.bignumber.equal(20000000);
+    });
+
+    it ('should not accept investments less then ticket price ', async function () {
+      await room.sendTransaction({value: this.ticketPrice.sub(ether(0.01)), from: wallets[4]}).should.be.rejectedWith(EVMRevert);
+    });
+
+    it ('should finish lottery and send fee to feeWallet', async function () {
+      const balancePre = web3.eth.getBalance(wallets[1]);
+
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[2]}).should.be.fulfilled;
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[3]}).should.be.fulfilled;
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[4]}).should.be.fulfilled;
+      await room.sendTransaction({value: this.ticketPrice, from: wallets[4]}).should.be.fulfilled;
+      const summaryInvestment = ether(0.4);
+
+      lotIndex = await room.getCurLotIndex();  
+      lotFinishTime = await room.getNotPayableTime(lotIndex);   
+      await increaseTimeTo(lotFinishTime);
+
+      var state = await room.isProcessNeeds();
+
+      while (state) {
+        await room.prepareToRewardProcess();    
+        state = await room.isProcessNeeds();
+      }
+
+      const balancePost = web3.eth.getBalance(wallets[1]);
+      balancePost.sub(balancePre).should.be.bignumber.equal(summaryInvestment.mul(this.feePercent).div(this.percentRate));
+    });
 
   }); 
 
