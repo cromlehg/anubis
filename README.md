@@ -57,31 +57,32 @@ https://ropsten.etherscan.io/tx/0x777017fe27a8c8ba8fb6126713964797aa157bb22c649e
 https://ropsten.etherscan.io/tx/0x87599b9e6ce882f4e956728d2869783da6af252faaa34c7ab0405d5ad1009863
 
 
+
 ## Ropsten test #2
 
 ### Links
-1. _Room1_ - https://ropsten.etherscan.io/address/0x2c7c167db4e1c38672d3cd83149adb87a1756dd8
+1. _Room1_ - https://ropsten.etherscan.io/address/0xa0c1549114619dd399dfde1d96bf225fd3aa5feb
 
 
 ##### Investors
 
-* 0.1 ETH, gas = 172904
-https://ropsten.etherscan.io/tx/0xf0a9b2212b15dc6ac130b231a6c8c5ad924d21d988e08cae7f0ad6e9e90d833b
+* 0.1 ETH => 1 ticket, gas = 172898
+https://ropsten.etherscan.io/tx/0xb48af4117696dd6daea97990369a36a3c3002cfe45f4bc23fe9b1e3fc230b3aa
 
-* 0.2 ETH, gas = 141341
-https://ropsten.etherscan.io/tx/0x7085952b8b3013e7fe984f73a7141095e9f4fcb6737fe9b54e28f16b0e944ee7
+* 0.25 ETH => 2 tickets and 0.05 ETH back, gas = 148029
+https://ropsten.etherscan.io/tx/0x6d8f5ca06bdc6e2ca0ad287028992587d60281248323a70d31729e5a8a5987ce
 
-* 0.01 ETH => rejected txn, less then mininal investment limit, gas = 23385
-https://ropsten.etherscan.io/tx/0x8d76d2629b058f41ada7d8adbef28d78f940da9ea48cddcddf9decad6d88233d
-
-* 0.155 ETH, gas = 119604
-https://ropsten.etherscan.io/tx/0xe5c9095696ec85b20822e9011ac7d99382561c339a987a4fea5204763201b1e0
+* 0.01 ETH => rejected txn, less then ticket price, gas = 23385
+https://ropsten.etherscan.io/tx/0x5fe6879af03f119a36ac56759d9bb496baa83f1f753dbb710f810745babda25d
 
 
 ##### Service operations
 
-* prepareToRewardProcess, gas = 175944
-https://ropsten.etherscan.io/tx/0x8296eb2ee30ac81f2b36725bb60d45b6f048c17926c447fd98aabc86df86aa68
+* setFeeWallet, gas = 43766
+https://ropsten.etherscan.io/tx/0x5b05a6abfdecf01530980c3b0d65c0430c05b20adfeb3753d986b6bb7243cd52
 
-* prepareToRewardProcess, gas = 266929
-https://ropsten.etherscan.io/tx/0x2656343b5ad5fc62bc124551b8eccc1251827881965ef819ba17e15c87152bc3
+* prepareToRewardProcess, gas = 178440
+https://ropsten.etherscan.io/tx/0xf8a5bb9b604c07d5f1618d7fcb13fb766a872c53488ba5ab15c64bc9aa747543
+
+* prepareToRewardProcess, gas = 
+https://ropsten.etherscan.io/tx/0xcbca04bed983e60ddac51075c8b88277b22f59c3d7cf7839b0894219f6e41755
