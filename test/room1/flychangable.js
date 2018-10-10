@@ -27,6 +27,28 @@ export default function (Room, wallets) {
 
   });
 
+  it ('should not update parameters if current lottery is going', async function () {
+    var lotIndex = await room.getCurLotIndex();
+    var lotFinishTime = await room.getNotPayableTime(lotIndex); 
+    await increaseTimeTo(lotFinishTime.add(700));
+
+    const newFeePercent = 10;
+    const newStarts = latestTime() + duration.seconds(10);
+    const newDuration = 90000;
+    const newInterval = 500;
+    const newTicketPrice = ether(0.2);
+
+    var state = await room.isProcessNeeds();
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    const owner = await room.owner();
+    await room.updateParameters(wallets[2], newFeePercent, newStarts, newDuration, newInterval, newTicketPrice, {from: owner}).should.be.rejectedWith(EVMRevert);
+
+  });
+
   it ('should set new parameters: feeWallet, starts, duration, interval', async function () {
     var lotIndex = await room.getCurLotIndex();
     var lotFinishTime = await room.getNotPayableTime(lotIndex); 
