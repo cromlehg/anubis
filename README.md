@@ -60,28 +60,50 @@ https://ropsten.etherscan.io/tx/0x87599b9e6ce882f4e956728d2869783da6af252faaa34c
 ## Ropsten test #2
 
 ### Links
-1. _Room1_ - https://ropsten.etherscan.io/address/0x2c7c167db4e1c38672d3cd83149adb87a1756dd8
+1. _Room1_ - https://ropsten.etherscan.io/address/0x93d5bda3bdb881e3c2d9a6f379218f49cfa6be79
 
 
 ##### Investors
 
-* 0.1 ETH, gas = 172904
-https://ropsten.etherscan.io/tx/0xf0a9b2212b15dc6ac130b231a6c8c5ad924d21d988e08cae7f0ad6e9e90d833b
+###### First lottery
 
-* 0.2 ETH, gas = 141341
-https://ropsten.etherscan.io/tx/0x7085952b8b3013e7fe984f73a7141095e9f4fcb6737fe9b54e28f16b0e944ee7
+* 0.1 ETH => 1 ticket, gas = 173536
+https://ropsten.etherscan.io/tx/0xddfbc08c3c7da7f4590e246cd98c0fdf9bf4cde5be6e0cf441dff6ba132e41b4
 
-* 0.01 ETH => rejected txn, less then mininal investment limit, gas = 23385
-https://ropsten.etherscan.io/tx/0x8d76d2629b058f41ada7d8adbef28d78f940da9ea48cddcddf9decad6d88233d
+* 0.2 ETH => 2 tickets, gas = 141967
+https://ropsten.etherscan.io/tx/0x8d36c7615c1e7ed0634fda00c3ffebe6066e565e307bfaadbadb0c67beb96d2f
 
-* 0.155 ETH, gas = 119604
-https://ropsten.etherscan.io/tx/0xe5c9095696ec85b20822e9011ac7d99382561c339a987a4fea5204763201b1e0
+###### Second lottery (after update)
+
+* 0.15 ETH => rejected txn, lottery is not started, gas = 22183
+https://ropsten.etherscan.io/tx/0x724818bcae0647c5ead1df464dfd1dddc263373f16d6bd780771c0b6d9ca45e1
+
+* 0.155 ETH, gas = 180236
+https://ropsten.etherscan.io/tx/0x8df0c403dfbbe541a44f818cd1d753b12eab1be752d82f3d8fe7a5c66ffca9d9
+
+* 0.3 ETH, gas = 141967
+https://ropsten.etherscan.io/tx/0xb4cf3fe3dd4c03f94feedb70ae025b239e59e4dd7dfc496e852a14907b0314ad
 
 
 ##### Service operations
 
-* prepareToRewardProcess, gas = 175944
-https://ropsten.etherscan.io/tx/0x8296eb2ee30ac81f2b36725bb60d45b6f048c17926c447fd98aabc86df86aa68
+* setFeeWallet, gas = 43810
+https://ropsten.etherscan.io/tx/0x3d62c361f1f0db8074ebbeabfe200b1d31c52028467f0ef9189ce1dea4c4622c
 
-* prepareToRewardProcess, gas = 266929
-https://ropsten.etherscan.io/tx/0x2656343b5ad5fc62bc124551b8eccc1251827881965ef819ba17e15c87152bc3
+* updateParameters => rejected txn, current lottery is not finished, gas = 26619
+https://ropsten.etherscan.io/tx/0x205b5d07c9308f054cf76f5b24c235eeb7994a6652ec41ceb7083d8805c5064b
+
+* prepareToRewardProcess, gas = 178763
+https://ropsten.etherscan.io/tx/0xbb3640fba7fd8f0e4cf67f8f8ba7c4bb10d0b8527b6163033646cded43a64233
+
+* prepareToRewardProcess, gas = 213988
+https://ropsten.etherscan.io/tx/0x255eda47c2e15da32179d62094599de7cef949c3ab795592522009e79ab62802
+
+* updateParameters, gas = 76778
+https://ropsten.etherscan.io/tx/0x03a0ab3d8843ae8647b998bd4c111c3d2ed8e4c965ffb62fade5a3f7447eab5a
+
+* prepareToRewardProcess, gas = 178763
+https://ropsten.etherscan.io/tx/0x2cabeeac12594b78bf6415754b50600fca00c322cea12ba0d89c2152e20586dd
+
+* prepareToRewardProcess, gas = 183988
+https://ropsten.etherscan.io/tx/0xbe83e4ac4ccb58fdab89dcec1bd15909a3d34e27cafb889637a7b8090a24a5ab
