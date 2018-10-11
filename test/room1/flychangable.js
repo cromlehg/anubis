@@ -86,7 +86,7 @@ export default function (Room, wallets) {
   it ('should update parameters and use it', async function () {
     var lotIndex = await room.getCurLotIndex();
     var lotFinishTime = await room.getNotPayableTime(lotIndex); 
-    await increaseTimeTo(lotFinishTime.add(10));
+    await increaseTimeTo(lotFinishTime.add(100));
 
     const newFeePercent = 10;
     const newStarts = latestTime() + duration.days(1);
@@ -128,6 +128,116 @@ export default function (Room, wallets) {
     const balancePost = web3.eth.getBalance(wallets[2]);
     const fee = summaryInvestment.mul(newFeePercent).div(this.percentRate);
     balancePost.sub(balancePre).should.be.bignumber.equal(fee);
+
+  });
+
+    it ('should update parameters several times', async function () {
+
+    //--first update--//
+
+    var lotIndex = await room.getCurLotIndex();
+    var lotFinishTime = await room.getNotPayableTime(lotIndex); 
+    await increaseTimeTo(lotFinishTime.add(100));
+
+    var newFeePercent = 10;
+    var newStarts = latestTime() + duration.days(1);
+    var newDuration = 90000;
+    var newInterval = 500;
+    var newTicketPrice = ether(0.2);
+
+    var state = await room.isProcessNeeds();
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    const owner = await room.owner();
+    await room.updateParameters(wallets[2], newFeePercent, newStarts, newDuration, newInterval, newTicketPrice, {from: owner}).should.be.fulfilled;
+
+    var balancePre = web3.eth.getBalance(wallets[2]);
+
+    await increaseTimeTo(newStarts);
+ 
+    await room.sendTransaction({value: newTicketPrice, from: wallets[3]}).should.be.fulfilled;
+    await room.sendTransaction({value: newTicketPrice, from: wallets[4]}).should.be.fulfilled;
+    var summaryInvestment = ether(0.4);
+
+    lotIndex = await room.getCurLotIndex();  
+    lotFinishTime = await room.getNotPayableTime(lotIndex); 
+    await increaseTimeTo(lotFinishTime);
+
+    state = await room.isProcessNeeds();
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    var balancePost = web3.eth.getBalance(wallets[2]);
+    var fee = summaryInvestment.mul(newFeePercent).div(this.percentRate);
+    balancePost.sub(balancePre).should.be.bignumber.equal(fee);
+
+    //--second update--//
+
+    lotIndex = await room.getCurLotIndex();
+    lotFinishTime = await room.getNotPayableTime(lotIndex); 
+    await increaseTimeTo(lotFinishTime.add(100));
+
+    newFeePercent = 20;
+    newStarts = latestTime() + duration.days(1);
+    newDuration = 90000;
+    newInterval = 500;
+    newTicketPrice = ether(0.3);
+
+    state = await room.isProcessNeeds();
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    await room.updateParameters(wallets[2], newFeePercent, newStarts, newDuration, newInterval, newTicketPrice, {from: owner}).should.be.fulfilled;
+
+    balancePre = web3.eth.getBalance(wallets[2]);
+
+    await increaseTimeTo(newStarts);
+
+    await room.sendTransaction({value: newTicketPrice, from: wallets[3]}).should.be.fulfilled;
+    await room.sendTransaction({value: newTicketPrice, from: wallets[4]}).should.be.fulfilled;
+    summaryInvestment = ether(0.6);
+
+    lotIndex = await room.getCurLotIndex();  
+    lotFinishTime = await room.getNotPayableTime(lotIndex); 
+    await increaseTimeTo(lotFinishTime);
+
+    state = await room.isProcessNeeds();
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    balancePost = web3.eth.getBalance(wallets[2]);
+    fee = summaryInvestment.mul(newFeePercent).div(this.percentRate);
+    balancePost.sub(balancePre).should.be.bignumber.equal(fee);
+
+  });
+
+  it ('should update parameters only by owner', async function () {
+    var lotIndex = await room.getCurLotIndex();
+    var lotFinishTime = await room.getNotPayableTime(lotIndex); 
+    await increaseTimeTo(lotFinishTime.add(100));
+
+    const newFeePercent = 10;
+    const newStarts = latestTime() + duration.days(1);
+    const newDuration = 90000;
+    const newInterval = 500;
+    const newTicketPrice = ether(0.5);
+
+    var state = await room.isProcessNeeds();
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    await room.updateParameters(wallets[2], newFeePercent, newStarts, newDuration, newInterval, newTicketPrice, {from: wallets[3]}).should.be.rejectedWith(EVMRevert);
 
   });
 
