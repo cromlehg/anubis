@@ -78,10 +78,10 @@ https://ropsten.etherscan.io/tx/0x8d36c7615c1e7ed0634fda00c3ffebe6066e565e307bfa
 * 0.15 ETH => rejected txn, lottery is not started, gas = 22183
 https://ropsten.etherscan.io/tx/0x724818bcae0647c5ead1df464dfd1dddc263373f16d6bd780771c0b6d9ca45e1
 
-* 0.155 ETH, gas = 180236
+* 0.155 ETH => 1 ticket and 0.05 ETH back, gas = 180236
 https://ropsten.etherscan.io/tx/0x8df0c403dfbbe541a44f818cd1d753b12eab1be752d82f3d8fe7a5c66ffca9d9
 
-* 0.3 ETH, gas = 141967
+* 0.3 ETH => 2 tickets, gas = 141967
 https://ropsten.etherscan.io/tx/0xb4cf3fe3dd4c03f94feedb70ae025b239e59e4dd7dfc496e852a14907b0314ad
 
 
