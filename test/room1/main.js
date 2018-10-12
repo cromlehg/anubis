@@ -137,4 +137,42 @@ export default function (Room, wallets) {
 
   }); 
 
+  it ('should correct pay reward', async function () {
+    const balancePre = web3.eth.getBalance(wallets[1]);
+    const investor1BalancePre = web3.eth.getBalance(wallets[6]);
+    const investor2BalancePre = web3.eth.getBalance(wallets[7]);
+    const investor3BalancePre = web3.eth.getBalance(wallets[8]);
+    const preSummary = investor1BalancePre.add(investor2BalancePre).add(investor3BalancePre);
+
+    var lotIndex = await room.getCurLotIndex();
+    var lotFinishTime = await room.getNotPayableTime(lotIndex); 
+    await increaseTimeTo(lotFinishTime.add(600));    
+    await room.sendTransaction({value: ether(5), from: wallets[6]}).should.be.fulfilled;
+    await room.sendTransaction({value: ether(5), from: wallets[7]}).should.be.fulfilled;
+    await room.sendTransaction({value: ether(5), from: wallets[8]}).should.be.fulfilled;
+    const summaryInvestment = ether(15);
+
+    lotIndex = await room.getCurLotIndex();  
+    lotFinishTime = await room.getNotPayableTime(lotIndex);   
+    await increaseTimeTo(lotFinishTime);
+
+    var state = await room.isProcessNeeds();
+
+    while (state) {
+      await room.prepareToRewardProcess();    
+      state = await room.isProcessNeeds();
+    }
+
+    const balancePost = web3.eth.getBalance(wallets[1]);
+    const fee = summaryInvestment.mul(this.feePercent).div(this.percentRate);
+    balancePost.sub(balancePre).should.be.bignumber.equal(fee);
+
+    const investor1BalancePost = web3.eth.getBalance(wallets[6]);
+    const investor2BalancePost = web3.eth.getBalance(wallets[7]);
+    const investor3BalancePost = web3.eth.getBalance(wallets[8]);
+    const postSummary = investor1BalancePost.add(investor2BalancePost).add(investor3BalancePost);
+    const diff = preSummary.sub(postSummary);
+    Math.round(diff.div(10000000000)).should.be.bignumber.equal(Math.round(fee.div(10000000000)));
+  });
+
 }

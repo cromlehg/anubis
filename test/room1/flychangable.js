@@ -104,6 +104,9 @@ export default function (Room, wallets) {
     await room.updateParameters(wallets[2], newFeePercent, newStarts, newDuration, newInterval, newTicketPrice, {from: owner}).should.be.fulfilled;
 
     const balancePre = web3.eth.getBalance(wallets[2]);
+    const investor1BalancePre = web3.eth.getBalance(wallets[3]);
+    const investor2BalancePre = web3.eth.getBalance(wallets[4]);
+    const preSummary = investor1BalancePre.add(investor2BalancePre);
 
     // new start time is later
     await room.sendTransaction({value: newTicketPrice, from: wallets[3]}).should.be.rejectedWith(EVMRevert);
@@ -128,6 +131,12 @@ export default function (Room, wallets) {
     const balancePost = web3.eth.getBalance(wallets[2]);
     const fee = summaryInvestment.mul(newFeePercent).div(this.percentRate);
     balancePost.sub(balancePre).should.be.bignumber.equal(fee);
+
+    const investor1BalancePost = web3.eth.getBalance(wallets[3]);
+    const investor2BalancePost = web3.eth.getBalance(wallets[4]);
+    const postSummary = investor1BalancePost.add(investor2BalancePost);
+    const diff = preSummary.sub(postSummary);
+    Math.round(diff.div(10000000000)).should.be.bignumber.equal(Math.round(fee.div(10000000000)));
 
   });
 
