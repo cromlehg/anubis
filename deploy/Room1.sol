@@ -202,7 +202,7 @@ contract Room1 is Ownable {
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
     require(lot.state == LotState.Finished, "Contract params can be changed only when current lottery finihsed!");
-    lastChangesIndex = curLotIndex + 1;
+    lastChangesIndex = curLotIndex.add(1);
     feeWallet = newFeeWallet; 
     feePercent = newFeePercent;
     starts = newStarts; 
