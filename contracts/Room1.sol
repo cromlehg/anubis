@@ -214,9 +214,8 @@ contract Room1 is Ownable {
 
       if(index == lot.ticketsCount) {
         lot.state = LotState.Finished;
+        lotProcessIndex = lotProcessIndex.add(1);
       }
-
-      lotProcessIndex = lotProcessIndex.add(1);
     } 
 
     lot.processIndex = index;
