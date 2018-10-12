@@ -152,6 +152,12 @@ contract Room1 is Ownable {
     msg.sender.transfer(refund);
   }
 
+  function canUpdate() view public started returns(bool) {
+    uint curLotIndex = getCurLotIndex();
+    Lot storage lot = lots[curLotIndex];
+    return lot.state == LotState.Finished;
+  }
+
   function isProcessNeeds() view public started returns(bool) {
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
