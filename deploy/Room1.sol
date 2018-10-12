@@ -276,6 +276,12 @@ contract Room1 is Ownable {
     msg.sender.transfer(refund);
   }
 
+  function canUpdate() view public started returns(bool) {
+    uint curLotIndex = getCurLotIndex();
+    Lot storage lot = lots[curLotIndex];
+    return lot.state == LotState.Finished;
+  }
+
   function isProcessNeeds() view public started returns(bool) {
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
@@ -338,9 +344,8 @@ contract Room1 is Ownable {
 
       if(index == lot.ticketsCount) {
         lot.state = LotState.Finished;
+        lotProcessIndex = lotProcessIndex.add(1);
       }
-
-      lotProcessIndex = lotProcessIndex.add(1);
     } 
 
     lot.processIndex = index;
