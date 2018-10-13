@@ -26,11 +26,13 @@ contract Room1 is Ownable {
 
   uint public starts;
 
-  uint ticketPrice;
+  uint public ticketPrice;
 
-  uint feePercent;
+  uint public feePercent;
 
   uint public lotProcessIndex;
+
+  uint public lastChangesIndex;
 
   address public feeWallet;
 
@@ -71,6 +73,20 @@ contract Room1 is Ownable {
     _;
   }
 
+  function updateParameters(address newFeeWallet, uint newFeePercent, uint newStarts, uint newDuration, uint newInterval, uint newTicketPrice) public onlyOwner {
+    require(newStarts > now, "Lottery can started only in future!");
+    uint curLotIndex = getCurLotIndex();
+    Lot storage lot = lots[curLotIndex];
+    require(lot.state == LotState.Finished, "Contract params can be changed only when current lottery finihsed!");
+    lastChangesIndex = curLotIndex.add(1);
+    feeWallet = newFeeWallet; 
+    feePercent = newFeePercent;
+    starts = newStarts; 
+    duration = newDuration; 
+    interval = newInterval; 
+    ticketPrice = newTicketPrice; 
+  }
+
   function getLotInvested(uint lotNumber, address player) view public returns(uint) {
     Lot storage lot = lots[lotNumber];
     return lot.invested[player];
@@ -85,7 +101,7 @@ contract Room1 is Ownable {
     uint passed = now.sub(starts);
     if(passed == 0)
       return 0;
-    return passed.div(interval+duration);
+    return passed.div(interval.add(duration)).add(lastChangesIndex);
   }
 
   constructor() public {
@@ -102,7 +118,7 @@ contract Room1 is Ownable {
   }
 
   function getNotPayableTime(uint lotIndex) view public returns(uint) {
-    return starts.add(interval.add(duration).mul(lotIndex.add(1))).sub(interval);
+    return starts.add(interval.add(duration).mul(lotIndex.add(1).sub(lastChangesIndex))).sub(interval);
   }
 
   function () public payable notContract(msg.sender) started {
@@ -134,6 +150,12 @@ contract Room1 is Ownable {
 
     uint refund = msg.value.sub(toInvest);
     msg.sender.transfer(refund);
+  }
+
+  function canUpdate() view public started returns(bool) {
+    uint curLotIndex = getCurLotIndex();
+    Lot storage lot = lots[curLotIndex];
+    return lot.state == LotState.Finished;
   }
 
   function isProcessNeeds() view public started returns(bool) {
@@ -198,9 +220,8 @@ contract Room1 is Ownable {
 
       if(index == lot.ticketsCount) {
         lot.state = LotState.Finished;
+        lotProcessIndex = lotProcessIndex.add(1);
       }
-
-      lotProcessIndex = lotProcessIndex.add(1);
     } 
 
     lot.processIndex = index;
