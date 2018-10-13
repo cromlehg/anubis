@@ -26,9 +26,9 @@ contract Room1 is Ownable {
 
   uint public starts;
 
-  uint ticketPrice;
+  uint public ticketPrice;
 
-  uint feePercent;
+  uint public feePercent;
 
   uint public lotProcessIndex;
 
