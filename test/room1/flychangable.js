@@ -49,7 +49,7 @@ export default function (Room, wallets) {
 
   });
 
-  it ('should set new parameters: feeWallet, starts, duration, interval', async function () {
+  it ('should set new parameters: feeWallet, feePercent, starts, duration, interval, ticketPrice', async function () {
     var lotIndex = await room.getCurLotIndex();
     var lotFinishTime = await room.getNotPayableTime(lotIndex); 
     await increaseTimeTo(lotFinishTime);
@@ -72,6 +72,9 @@ export default function (Room, wallets) {
     const feeWallet = await room.feeWallet();
     feeWallet.should.be.equal(wallets[2]);
 
+    const feePercent = await room.feePercent();
+    feePercent.should.be.bignumber.equal(newFeePercent);
+
     const starts = await room.starts();
     starts.should.be.bignumber.equal(newStarts);
 
@@ -80,6 +83,9 @@ export default function (Room, wallets) {
 
     const interval = await room.interval();
     interval.should.be.bignumber.equal(newInterval);
+
+    const ticketPrice = await room.ticketPrice();
+    ticketPrice.should.be.bignumber.equal(newTicketPrice);
 
   });
 
