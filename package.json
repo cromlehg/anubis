@@ -22,10 +22,7 @@
   "scripts": {
     "compile": " rm -rf ./build && ./node_modules/.bin/truffle compile",
     "test": "./scripts/test.sh",
-    "flatten": "npm run flatten-controller && npm run flatten-lottery",
-    "flatten-controller": "./node_modules/.bin/truffle-flattener ./contracts/LotteryController.sol > ./deploy/LotteryController.sol",
-    "flatten-lottery": "./node_modules/.bin/truffle-flattener ./contracts/Lottery.sol > ./deploy/Lottery.sol",
-    "flatten-room": "./node_modules/.bin/truffle-flattener ./contracts/Room1.sol > ./deploy/Room.sol"
+    "flatten": "./node_modules/.bin/truffle-flattener ./contracts/Room1.sol > ./deploy/Room1.sol"
   },
   "repository": {
     "type": "git",

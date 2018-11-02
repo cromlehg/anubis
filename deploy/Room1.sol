@@ -132,7 +132,9 @@ contract Room1 is Ownable {
 
   event TicketPurchased(address lotAddr, uint lotIndex, uint ticketNumber, address player, uint ticketPrice);
 
-  event TicketWin(address lotAddr, uint lotIndex, uint ticketNumber, address player, uint win);
+  event TicketWon(address lotAddr, uint lotIndex, uint ticketNumber, address player, uint win);
+
+  event ParametersUpdated(uint lotIndex, address feeWallet, uint feePercent, uint starts, uint duration, uint interval, uint ticketPrice);
 
   using SafeMath for uint;
 
@@ -180,7 +182,7 @@ contract Room1 is Ownable {
     mapping (address => uint) invested;
     address[] players;
   }
-  
+
   mapping(uint => Lot) public lots;
 
   modifier started() {
@@ -198,17 +200,18 @@ contract Room1 is Ownable {
   }
 
   function updateParameters(address newFeeWallet, uint newFeePercent, uint newStarts, uint newDuration, uint newInterval, uint newTicketPrice) public onlyOwner {
-    require(newStarts > now, "Lottery can started only in future!");
+    require(newStarts > now, "Lottery can only be started in the future!");
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
-    require(lot.state == LotState.Finished, "Contract params can be changed only when current lottery finihsed!");
+    require(lot.state == LotState.Finished, "Contract parameters can only be changed if the current lottery is finished!");
     lastChangesIndex = curLotIndex.add(1);
-    feeWallet = newFeeWallet; 
+    feeWallet = newFeeWallet;
     feePercent = newFeePercent;
-    starts = newStarts; 
-    duration = newDuration; 
-    interval = newInterval; 
-    ticketPrice = newTicketPrice; 
+    starts = newStarts;
+    duration = newDuration;
+    interval = newInterval;
+    ticketPrice = newTicketPrice;
+    emit ParametersUpdated(lastChangesIndex, newFeeWallet, newFeePercent, newStarts, newDuration, newInterval, newTicketPrice);
   }
 
   function getLotInvested(uint lotNumber, address player) view public returns(uint) {
@@ -235,6 +238,7 @@ contract Room1 is Ownable {
     interval = 600;
     uint fullDuration = 86400;
     duration = fullDuration.sub(interval);
+    emit ParametersUpdated(1, feeWallet, feePercent, starts, duration, interval, ticketPrice);
   }
 
   function setFeeWallet(address newFeeWallet) public onlyOwner {
@@ -252,7 +256,7 @@ contract Room1 is Ownable {
     require(now < getNotPayableTime(curLotIndex), "Game finished!");
     Lot storage lot = lots[curLotIndex];
     require(RANGE.mul(RANGE) > lot.ticketsCount, "Ticket count limit exceeded!");
-    
+
     uint numTicketsToBuy = msg.value.div(ticketPrice);
 
     uint toInvest = ticketPrice.mul(numTicketsToBuy);
@@ -265,7 +269,7 @@ contract Room1 is Ownable {
     lot.invested[msg.sender] = lot.invested[msg.sender].add(toInvest);
 
     for(uint i = 0; i < numTicketsToBuy; i++) {
-      lot.tickets[lot.ticketsCount].owner = msg.sender; 
+      lot.tickets[lot.ticketsCount].owner = msg.sender;
       emit TicketPurchased(address(this), curLotIndex, lot.ticketsCount, msg.sender, ticketPrice);
       lot.ticketsCount = lot.ticketsCount.add(1);
     }
@@ -337,7 +341,7 @@ contract Room1 is Ownable {
           if(ticket.win > 0) {
             ticket.owner.transfer(ticket.win);
             summaryPayed[ticket.owner] = summaryPayed[ticket.owner].add(ticket.win);
-            emit TicketWin(address(this), lotProcessIndex, index, ticket.owner, ticket.win);
+            emit TicketWon(address(this), lotProcessIndex, index, ticket.owner, ticket.win);
           }
         }
       }
@@ -346,7 +350,7 @@ contract Room1 is Ownable {
         lot.state = LotState.Finished;
         lotProcessIndex = lotProcessIndex.add(1);
       }
-    } 
+    }
 
     lot.processIndex = index;
   }
