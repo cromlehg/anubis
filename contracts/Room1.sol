@@ -157,12 +157,18 @@ contract Room1 is Ownable {
   }
 
   function canUpdate() view public started returns(bool) {
+    if (starts > now) {
+      return false;
+    }
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
     return lot.state == LotState.Finished;
   }
 
   function isProcessNeeds() view public started returns(bool) {
+    if (starts > now) {
+      return false;
+    }
     uint curLotIndex = getCurLotIndex();
     Lot storage lot = lots[curLotIndex];
     return lotProcessIndex < curLotIndex || (now >= getNotPayableTime(lotProcessIndex) && lot.state != LotState.Finished);
