@@ -225,14 +225,15 @@ contract Room1 is Ownable {
   }
 
   function getCurLotIndex() view public returns(uint) {
+    if (starts > now) {
+      return lastChangesIndex;
+    }
     uint passed = now.sub(starts);
-    if(passed == 0)
-      return 0;
     return passed.div(interval.add(duration)).add(lastChangesIndex);
   }
 
   constructor() public {
-    starts = 1538524800;
+    starts = 1542835200;
     ticketPrice = 100000000000000000;
     feePercent = 5;
     interval = 600;
@@ -280,7 +281,7 @@ contract Room1 is Ownable {
     msg.sender.transfer(refund);
   }
 
-  function canUpdate() view public started returns(bool) {
+  function canUpdate() view public returns(bool) {
     if (starts > now) {
       return false;
     }
@@ -289,8 +290,9 @@ contract Room1 is Ownable {
     return lot.state == LotState.Finished;
   }
 
-  function isProcessNeeds() view public started returns(bool) {
-    if (starts > now) {
+  function isProcessNeeds() view public returns(bool) {
+    bool yolo = starts > now;
+    if (yolo) {
       return false;
     }
     uint curLotIndex = getCurLotIndex();
