@@ -229,13 +229,16 @@ contract Room1 is Ownable {
       return lastChangesIndex;
     }
     uint passed = now.sub(starts);
+    if(passed == 0)
+      return 0;
     return passed.div(interval.add(duration)).add(lastChangesIndex);
   }
 
   constructor() public {
-    starts = 1542835200;
+    starts = 1538524800;
     ticketPrice = 100000000000000000;
     feePercent = 5;
+    feeWallet = 0x470a2D1105EaE6aAe879623357F615Ab9cbf906E;
     interval = 600;
     uint fullDuration = 86400;
     duration = fullDuration.sub(interval);
@@ -291,8 +294,7 @@ contract Room1 is Ownable {
   }
 
   function isProcessNeeds() view public returns(bool) {
-    bool yolo = starts > now;
-    if (yolo) {
+    if (starts > now) {
       return false;
     }
     uint curLotIndex = getCurLotIndex();

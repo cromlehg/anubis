@@ -114,6 +114,7 @@ contract Room1 is Ownable {
     starts = 1538524800;
     ticketPrice = 100000000000000000;
     feePercent = 5;
+    feeWallet = 0x470a2D1105EaE6aAe879623357F615Ab9cbf906E;
     interval = 600;
     uint fullDuration = 86400;
     duration = fullDuration.sub(interval);
