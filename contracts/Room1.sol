@@ -111,12 +111,12 @@ contract Room1 is Ownable {
   }
 
   constructor() public {
-    starts = 1538524800;
+    starts = 1542999600;
     ticketPrice = 100000000000000000;
-    feePercent = 5;
-    feeWallet = 0x470a2D1105EaE6aAe879623357F615Ab9cbf906E;
-    interval = 600;
-    uint fullDuration = 86400;
+    feePercent = 30;
+    feeWallet = 0x53F22b8f420317E7CDcbf2A180A12534286CB578;
+    interval = 3600;
+    uint fullDuration = 7200;
     duration = fullDuration.sub(interval);
     emit ParametersUpdated(0, feeWallet, feePercent, starts, duration, interval, ticketPrice);
   }
