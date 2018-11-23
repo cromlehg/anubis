@@ -118,7 +118,7 @@ contract Room1 is Ownable {
     interval = 600;
     uint fullDuration = 86400;
     duration = fullDuration.sub(interval);
-    emit ParametersUpdated(1, feeWallet, feePercent, starts, duration, interval, ticketPrice);
+    emit ParametersUpdated(0, feeWallet, feePercent, starts, duration, interval, ticketPrice);
   }
 
   function setFeeWallet(address newFeeWallet) public onlyOwner {
