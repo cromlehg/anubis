@@ -80,7 +80,7 @@ contract Room2Online is Ownable {
   }
 
   function () public payable notContract(msg.sender) {
-    require(msg.value > minInvestLimit);
+    require(msg.value >= minInvestLimit);
     tickets.push(Ticket(msg.sender, msg.value, 0, false));    
     emit TicketPurchased(address(this), tickets.length.sub(1), msg.sender, msg.value);
     uint fee = msg.value.mul(feePercent).div(PERCENT_RATE);
