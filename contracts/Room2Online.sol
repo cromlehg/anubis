@@ -26,8 +26,6 @@ contract Room2Online is Ownable {
 
   address public feeWallet;
 
-  mapping (address => uint) public summaryPayed;
-
   struct Ticket {
     address owner;
     uint purchased;
