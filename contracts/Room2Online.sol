@@ -16,8 +16,6 @@ contract Room2Online is Ownable {
 
   using SafeMath for uint;
 
-  uint public LIMIT = 100;
-
   uint public PERCENT_RATE = 100;
 
   uint public minInvestLimit;
