@@ -271,4 +271,15 @@ export default function (Room, wallets) {
     balancePost1.should.be.bignumber.equal(balancePre1);
   });
 
+  it ('should count lot balance', async function () {
+    const owner = await room.owner();
+    await room.sendTransaction({value: ether(10), from: wallets[5]}).should.be.fulfilled;
+    await room.sendTransaction({value: ether(5), from: wallets[6]}).should.be.fulfilled;
+    await room.sendTransaction({value: ether(15), from: wallets[7]}).should.be.fulfilled;
+    await room.processRewards([0, 1], [ether(4), ether(2)], {from: owner}).should.be.fulfilled;
+    await room.processRewards([2], [ether(3)], {from: owner}).should.be.fulfilled;
+    const lot = await room.lots(0);
+    lot[0].should.be.bignumber.equal(ether(9));
+  });
+
 }
