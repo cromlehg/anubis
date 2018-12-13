@@ -36,8 +36,13 @@ export default function (Room, wallets) {
 
   });  
 
-  it ('should set new feeWallet', async function () {
-    await room.setFeeWallet(wallets[1]);
+  it ('should not set new feeWallet if not owner', async function () {
+    await room.setFeeWallet(wallets[1], {from: wallets[1]}).should.be.rejectedWith(EVMRevert);
+  });
+
+  it ('should set new feeWallet by owner', async function () {
+    const owner = await room.owner();
+    await room.setFeeWallet(wallets[1], {from: owner}).should.be.fulfilled;
     const feeWallet = await room.feeWallet();
     feeWallet.should.be.bignumber.equal(wallets[1]);
   });
@@ -141,6 +146,16 @@ export default function (Room, wallets) {
     await room.finishLot(finishTime, {from: owner}).should.be.fulfilled;
   });
 
+  it ('should change lotIndex when finishLot', async function () {
+    const owner = await room.owner();
+    await room.sendTransaction({value: ether(1), from: wallets[3]}).should.be.fulfilled;
+    const finishTime = latestTime() + duration.seconds(10);
+    const lotIndexPre = await room.lotIndex();
+    await room.finishLot(finishTime, {from: owner}).should.be.fulfilled;
+    const lotIndexPost = await room.lotIndex();
+    lotIndexPost.should.be.bignumber.equal(lotIndexPre.add(1));
+  });
+
   it ('should create event LotFinished', async function () {
     const owner = await room.owner();
     const address = await room.address;
@@ -205,6 +220,55 @@ export default function (Room, wallets) {
     TicketPayed.logs[1].args.ticketNumber.should.be.bignumber.equal(1);
     TicketPayed.logs[1].args.player.should.be.bignumber.equal(wallets[4]);
     TicketPayed.logs[1].args.win.should.be.bignumber.equal(30000000000000000);
+  });
+
+  it ('should processRewards correct', async function () {
+    const owner = await room.owner();
+    await room.sendTransaction({value: ether(50), from: wallets[5]}).should.be.fulfilled;
+    const balancePre = web3.eth.getBalance(wallets[5]);
+    await room.processRewards([0], [ether(10)], {from: owner}).should.be.fulfilled;
+    const balancePost = web3.eth.getBalance(wallets[5]);
+    balancePost.should.be.bignumber.equal(balancePre.add(ether(10)))
+  });
+
+  it ('should processRewards correct if several players', async function () {
+    const owner = await room.owner();
+    await room.sendTransaction({value: ether(50), from: wallets[5]}).should.be.fulfilled;
+    await room.sendTransaction({value: ether(50), from: wallets[6]}).should.be.fulfilled;
+    await room.sendTransaction({value: ether(50), from: wallets[7]}).should.be.fulfilled;
+    const balancePre = web3.eth.getBalance(wallets[5]);
+    const balancePre1 = web3.eth.getBalance(wallets[6]);
+    const balancePre2 = web3.eth.getBalance(wallets[7]);
+    await room.processRewards([0, 1, 2], [ether(5), ether(5), ether(5)], {from: owner}).should.be.fulfilled;
+    const balancePost = web3.eth.getBalance(wallets[5]);
+    const balancePost1 = web3.eth.getBalance(wallets[6]);
+    const balancePost2 = web3.eth.getBalance(wallets[7]);
+    balancePost.should.be.bignumber.equal(balancePre.add(ether(5)));
+    balancePost1.should.be.bignumber.equal(balancePre1.add(ether(5)));
+    balancePost2.should.be.bignumber.equal(balancePre2.add(ether(5)));
+  });
+
+  it ('should processRewards just once', async function () {
+    const owner = await room.owner();
+    await room.sendTransaction({value: ether(10), from: wallets[5]}).should.be.fulfilled;
+    await room.processRewards([0], [ether(1)], {from: owner}).should.be.fulfilled;
+    const balancePost = web3.eth.getBalance(wallets[5]);
+    await room.processRewards([0], [ether(1)], {from: owner}).should.be.fulfilled;
+    const balancePost1 = web3.eth.getBalance(wallets[5]);
+    balancePost.should.be.bignumber.equal(balancePost1);
+  });
+
+  it ('should not processRewards if not enough funds', async function () {
+    const owner = await room.owner();
+    await room.sendTransaction({value: ether(10), from: wallets[5]}).should.be.fulfilled;
+    await room.sendTransaction({value: ether(10), from: wallets[6]}).should.be.fulfilled;
+    const balancePre = web3.eth.getBalance(wallets[5]);
+    const balancePre1 = web3.eth.getBalance(wallets[6]);
+    await room.processRewards([0, 1], [ether(10), ether(10)], {from: owner}).should.be.rejectedWith(EVMRevert);
+    const balancePost = web3.eth.getBalance(wallets[5]);
+    const balancePost1 = web3.eth.getBalance(wallets[6]);
+    balancePost.should.be.bignumber.equal(balancePre);
+    balancePost1.should.be.bignumber.equal(balancePre1);
   });
 
 }
