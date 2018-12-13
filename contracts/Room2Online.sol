@@ -92,7 +92,7 @@ contract Room2Online is Ownable {
         ticket.win = wins[i];
         ticket.finished = true;
         lot.ticketNumbers.push(ticketNumber);
-        lot.balance.add(wins[i]);
+        lot.balance = lot.balance.add(wins[i]);
         ticket.owner.transfer(wins[i]);
         emit TicketPayed(address(this), lotIndex, ticketNumber, ticket.owner, wins[i]);
       }
