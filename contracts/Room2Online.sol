@@ -1,22 +1,25 @@
 pragma solidity ^0.4.24;
 
-import './ownership/Ownable.sol';
-import './math/SafeMath.sol';
-import './token/ERC20Cutted.sol';
+import "./ownership/Ownable.sol";
+import "./math/SafeMath.sol";
+import "./token/ERC20Cutted.sol";
+
 
 contract Room2Online is Ownable {
 
-  event TicketPurchased(address lotAddr, uint ticketNumber, address player, uint ticketPrice);
+  event TicketPurchased(address lotAddr, uint ticketNumber, address player, uint totalAmount, uint netAmount);
 
-  event TicketPayed(address lotAddr, uint lotIndex, uint ticketNumber, address player, uint win);
+  event TicketPaid(address lotAddr, uint lotIndex, uint ticketNumber, address player, uint winning);
 
-  event LotFinished(address lotAddr, uint lotIndex);
+  event LotStarted(address lotAddr, uint lotIndex, uint startTime);
+
+  event LotFinished(address lotAddr, uint lotIndex, uint finishTime);
 
   event ParametersUpdated(address feeWallet, uint feePercent, uint minInvestLimit);
 
   using SafeMath for uint;
 
-  uint public PERCENT_RATE = 100;
+  uint public percentRate = 100;
 
   uint public minInvestLimit;
 
@@ -26,15 +29,17 @@ contract Room2Online is Ownable {
 
   struct Ticket {
     address owner;
-    uint purchased;
-    uint win;
+    uint totalAmount;
+    uint netAmount;
+    uint winning;
     bool finished;
   }
 
   struct Lot {
     uint balance;
     uint[] ticketNumbers;
-    uint finishedTime;
+    uint startTime;
+    uint finishTime;
   }
 
   Ticket[] public tickets;
@@ -59,16 +64,17 @@ contract Room2Online is Ownable {
     emit ParametersUpdated(newFeeWallet, newFeePercent, newMinInvestLimit);
   }
 
-  function getTicketInfo(uint ticketNumber) view public returns(address, uint, uint, bool) {
+  function getTicketInfo(uint ticketNumber) public view returns(address, uint, uint, uint, bool) {
     Ticket storage ticket = tickets[ticketNumber];
-    return (ticket.owner, ticket.purchased, ticket.win, ticket.finished);
+    return (ticket.owner, ticket.totalAmount, ticket.netAmount, ticket.winning, ticket.finished);
   }
 
-  constructor() public {
+  constructor () public {
     minInvestLimit = 100000000000000000;
     feePercent = 30;
     feeWallet = 0x53F22b8f420317E7CDcbf2A180A12534286CB578;
     emit ParametersUpdated(feeWallet, feePercent, minInvestLimit);
+    emit LotStarted(address(this), lotIndex, now);
   }
 
   function setFeeWallet(address newFeeWallet) public onlyOwner {
@@ -77,33 +83,37 @@ contract Room2Online is Ownable {
 
   function () public payable notContract(msg.sender) {
     require(msg.value >= minInvestLimit);
-    tickets.push(Ticket(msg.sender, msg.value, 0, false));    
-    emit TicketPurchased(address(this), tickets.length.sub(1), msg.sender, msg.value);
-    uint fee = msg.value.mul(feePercent).div(PERCENT_RATE);
+    uint fee = msg.value.mul(feePercent).div(percentRate);
+    uint netAmount = msg.value.sub(fee);
+    tickets.push(Ticket(msg.sender, msg.value, netAmount, 0, false));
+    emit TicketPurchased(address(this), tickets.length.sub(1), msg.sender, msg.value, netAmount);
     feeWallet.transfer(fee);
   }
 
-  function processRewards(uint[] ticketNumbers, uint[] wins) public onlyOwner {
+  function processRewards(uint[] ticketNumbers, uint[] winnings) public onlyOwner {
     Lot storage lot = lots[lotIndex];
-    for(uint i = 0; i<ticketNumbers.length; i++) {
+    for (uint i = 0; i < ticketNumbers.length; i++) {
       uint ticketNumber = ticketNumbers[i];
       Ticket storage ticket = tickets[ticketNumber];
-      if(!ticket.finished) {
-        ticket.win = wins[i];
+      if (!ticket.finished) {
+        ticket.winning = winnings[i];
         ticket.finished = true;
         lot.ticketNumbers.push(ticketNumber);
-        lot.balance = lot.balance.add(wins[i]);
-        ticket.owner.transfer(wins[i]);
-        emit TicketPayed(address(this), lotIndex, ticketNumber, ticket.owner, wins[i]);
+        lot.balance = lot.balance.add(winnings[i]);
+        ticket.owner.transfer(winnings[i]);
+        emit TicketPaid(address(this), lotIndex, ticketNumber, ticket.owner, winnings[i]);
       }
     }
   }
 
-  function finishLot(uint lotFinishedTime) public onlyOwner {
-    Lot storage lot = lots[lotIndex];
-    lot.finishedTime = lotFinishedTime;
-    emit LotFinished(address(this), lotIndex);
+  function finishLot(uint currentLotFinishTime, uint nextLotStartTime) public onlyOwner {
+    Lot storage currentLot = lots[lotIndex];
+    currentLot.finishTime = currentLotFinishTime;
+    emit LotFinished(address(this), lotIndex, currentLotFinishTime);
     lotIndex++;
+    Lot storage nextLot = lots[lotIndex];
+    nextLot.startTime = nextLotStartTime;
+    emit LotStarted(address(this), lotIndex, nextLotStartTime);
   }
 
   function retrieveTokens(address tokenAddr, address to) public onlyOwner {
