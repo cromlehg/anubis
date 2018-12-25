@@ -22,7 +22,8 @@
   "scripts": {
     "compile": " rm -rf ./build && ./node_modules/.bin/truffle compile",
     "test": "./scripts/test.sh",
-    "flatten": "./node_modules/.bin/truffle-flattener ./contracts/Room1.sol > ./deploy/Room1.sol"
+    "flatten-room1": "./node_modules/.bin/truffle-flattener ./contracts/Room1.sol > ./deploy/Room1.sol",
+    "flatten-room2": "./node_modules/.bin/truffle-flattener ./contracts/Room2Online.sol > ./deploy/Room2Online.sol"
   },
   "repository": {
     "type": "git",
