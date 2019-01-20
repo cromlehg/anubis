@@ -14,6 +14,8 @@ contract Room1 is Ownable {
 
   using SafeMath for uint;
 
+  uint diffRangeCounter = 0;
+
   uint public LIMIT = 100;
 
   uint public RANGE = 1000000000;
@@ -35,6 +37,8 @@ contract Room1 is Ownable {
   uint public lotProcessIndex;
 
   uint public lastChangesIndex;
+
+  uint public MIN_DISPERSION_K = 10;
 
   address public feeWallet;
 
@@ -203,10 +207,50 @@ contract Room1 is Ownable {
 
       number = block.number;
 
+      uint dispersionK = MIN_DISPERSION_K;
+
+      uint diffRangeLimit = 0;
+ 
+      if(limit > 0) {
+        diffRangeLimit = limit.div(dispersionK);
+        if(diffRangeLimit == 0) {
+          diffRangeLimit = 1;
+        }
+      }
+
+      diffRangeCounter = 0;
+
+      uint enlargedRange = RANGE.mul(dispersionK);
+
+      bool enlargedWinnerGenerated = false;
+
+      bool enlargedWinnerPrepared = false;
+
+      uint enlargedWinnerIndex = 0;
+
       for(; index < limit; index++) {
+
         number = uint(keccak256(abi.encodePacked(number)))%RANGE;
         lot.tickets[index].number = number;
         lot.summaryNumbers = lot.summaryNumbers.add(number);
+
+        if(!enlargedWinnerGenerated) {
+          enlargedWinnerIndex = uint(keccak256(abi.encodePacked(number)))%enlargedRange;
+          enlargedWinnerGenerated = true;
+        } if(!enlargedWinnerPrepared && diffRangeCounter == enlargedWinnerIndex) {
+          number = uint(keccak256(abi.encodePacked(number)))%enlargedRange;
+          lot.tickets[index].number = lot.tickets[index].number.add(number);
+          lot.summaryNumbers = lot.summaryNumbers.add(number);
+          enlargedWinnerGenerated = true;
+        }
+
+        if(diffRangeCounter == diffRangeLimit) {
+          diffRangeCounter = 0;
+          enlargedWinnerPrepared = false;
+          enlargedWinnerGenerated = false;
+        }
+
+        diffRangeCounter++;
       }
 
       if(index == lot.ticketsCount) {
