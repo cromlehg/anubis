@@ -19,7 +19,7 @@ export default function (Room, wallets) {
 
   beforeEach(async function () {
     this.percentRate = 100;
-    this.feePercent = 5;
+    this.feePercent = 30;
     this.ticketPrice = ether(0.1);
 
     room = await Room.new();
@@ -56,7 +56,7 @@ export default function (Room, wallets) {
     var lotIndex = await room.getCurLotIndex();
     var lotFinishTime = await room.getNotPayableTime(lotIndex);
    
-    await increaseTimeTo(lotFinishTime.add(600));    
+    await increaseTimeTo(lotFinishTime.add(3600));    
 
     await room.sendTransaction({value: this.ticketPrice, from: wallets[2]}).should.be.fulfilled;
 
@@ -88,7 +88,7 @@ export default function (Room, wallets) {
     it ('should accept investments before next lottery finish time', async function () {
       lotIndex = await room.getCurLotIndex();
       lotFinishTime = await room.getNotPayableTime(lotIndex);
-      await increaseTimeTo(lotFinishTime.add(600));
+      await increaseTimeTo(lotFinishTime.add(3600));
 
       await room.sendTransaction({value: this.ticketPrice, from: wallets[2]}).should.be.fulfilled;
       await room.sendTransaction({value: this.ticketPrice, from: wallets[3]}).should.be.fulfilled;
@@ -146,7 +146,7 @@ export default function (Room, wallets) {
 
     var lotIndex = await room.getCurLotIndex();
     var lotFinishTime = await room.getNotPayableTime(lotIndex); 
-    await increaseTimeTo(lotFinishTime.add(600));    
+    await increaseTimeTo(lotFinishTime.add(3600));    
     await room.sendTransaction({value: ether(5), from: wallets[6]}).should.be.fulfilled;
     await room.sendTransaction({value: ether(5), from: wallets[7]}).should.be.fulfilled;
     await room.sendTransaction({value: ether(5), from: wallets[8]}).should.be.fulfilled;
