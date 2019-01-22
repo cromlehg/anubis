@@ -20,7 +20,7 @@ export default function (Room, wallets) {
   beforeEach(async function () {
     this.percentRate = 100;
     this.feePercent = 30;
-    this.ticketPrice = ether(0.1);
+    this.ticketPrice = ether(1);
 
     room = await Room.new();
     await room.setFeeWallet(wallets[1]);
@@ -104,7 +104,7 @@ export default function (Room, wallets) {
       await room.sendTransaction({value: this.ticketPrice.mul(2).add(ether(0.09)), from: wallets[4]}).should.be.fulfilled;
       const balancePost = web3.eth.getBalance(wallets[4]);
       const paydEth = balancePre.sub(balancePost);
-      Math.round(paydEth.div(10000000000)).should.be.bignumber.equal(20000000);
+      Math.round(paydEth.div(10000000000)).should.be.bignumber.equal(200000000);
     });
 
     it ('should not accept investments less then ticket price ', async function () {
@@ -118,7 +118,7 @@ export default function (Room, wallets) {
       await room.sendTransaction({value: this.ticketPrice, from: wallets[3]}).should.be.fulfilled;
       await room.sendTransaction({value: this.ticketPrice, from: wallets[4]}).should.be.fulfilled;
       await room.sendTransaction({value: this.ticketPrice, from: wallets[4]}).should.be.fulfilled;
-      const summaryInvestment = ether(0.4);
+      const summaryInvestment = ether(4);
 
       lotIndex = await room.getCurLotIndex();  
       lotFinishTime = await room.getNotPayableTime(lotIndex);   
