@@ -104,22 +104,28 @@ export default function (Room, wallets) {
   it ('should create event TicketPurchased', async function () {
     const address = await room.address;
     const minInvestLimit = await room.minInvestLimit();
+    const feePercent = await room.feePercent();
     const TicketPurchased = await room.sendTransaction({value: minInvestLimit, from: wallets[3]});
+
     TicketPurchased.logs[0].event.should.be.equal('TicketPurchased');
     TicketPurchased.logs[0].args.lotAddr.should.be.bignumber.equal(address);
     TicketPurchased.logs[0].args.ticketNumber.should.be.bignumber.equal(0);
     TicketPurchased.logs[0].args.player.should.be.bignumber.equal(wallets[3]);
-    TicketPurchased.logs[0].args.ticketPrice.should.be.bignumber.equal(minInvestLimit);
+    TicketPurchased.logs[0].args.totalAmount.should.be.bignumber.equal(minInvestLimit);
+    TicketPurchased.logs[0].args.netAmount.should.be.bignumber.equal(minInvestLimit.sub(minInvestLimit.mul(feePercent).div(100)));
   });
 
   it ('should push ticket', async function () {
     const minInvestLimit = await room.minInvestLimit();
+    const feePercent = await room.feePercent();
     await room.sendTransaction({value: minInvestLimit, from: wallets[3]}).should.be.fulfilled;
     const ticket = await room.getTicketInfo(0);
+
     ticket[0].should.be.bignumber.equal(wallets[3]);
     ticket[1].should.be.bignumber.equal(minInvestLimit);
-    ticket[2].should.be.bignumber.equal(0);
-    ticket[3].toString().should.be.equal('false');
+    ticket[2].should.be.bignumber.equal(minInvestLimit.sub(minInvestLimit.mul(feePercent).div(100)));
+    ticket[3].should.be.bignumber.equal(0);
+    ticket[4].toString().should.be.equal('false');
   });
 
   it ('should send fee to feeWallet', async function () {
@@ -135,7 +141,8 @@ export default function (Room, wallets) {
     const minInvestLimit = await room.minInvestLimit();
     await room.sendTransaction({value: minInvestLimit, from: wallets[3]}).should.be.fulfilled;
     const finishTime = latestTime() + duration.seconds(10);
-    await room.finishLot(finishTime, {from: wallets[3]}).should.be.rejectedWith(EVMRevert);
+    const startTime = latestTime() + duration.seconds(100);
+    await room.finishLot(finishTime, startTime, {from: wallets[3]}).should.be.rejectedWith(EVMRevert);
   });
 
   it ('should finishLot by owner', async function () {
@@ -143,7 +150,8 @@ export default function (Room, wallets) {
     const minInvestLimit = await room.minInvestLimit();
     await room.sendTransaction({value: minInvestLimit, from: wallets[3]}).should.be.fulfilled;
     const finishTime = latestTime() + duration.seconds(10);
-    await room.finishLot(finishTime, {from: owner}).should.be.fulfilled;
+    const startTime = latestTime() + duration.seconds(100);
+    await room.finishLot(finishTime, startTime, {from: owner}).should.be.fulfilled;
   });
 
   it ('should change lotIndex when finishLot', async function () {
@@ -151,27 +159,37 @@ export default function (Room, wallets) {
     await room.sendTransaction({value: ether(1), from: wallets[3]}).should.be.fulfilled;
     const finishTime = latestTime() + duration.seconds(10);
     const lotIndexPre = await room.lotIndex();
-    await room.finishLot(finishTime, {from: owner}).should.be.fulfilled;
+    const startTime = latestTime() + duration.seconds(100);
+    await room.finishLot(finishTime, startTime, {from: owner}).should.be.fulfilled;
     const lotIndexPost = await room.lotIndex();
     lotIndexPost.should.be.bignumber.equal(lotIndexPre.add(1));
   });
 
-  it ('should create event LotFinished', async function () {
+  it ('should create events LotFinished and LotStarted', async function () {
     const owner = await room.owner();
     const address = await room.address;
     const minInvestLimit = await room.minInvestLimit();
     await room.sendTransaction({value: minInvestLimit, from: wallets[3]}).should.be.fulfilled;
     const finishTime = latestTime() + duration.seconds(10);
-    const LotFinished = await room.finishLot(finishTime, {from: owner}).should.be.fulfilled;
+    const startTime = latestTime() + duration.seconds(100);
+    const LotFinished = await room.finishLot(finishTime, startTime, {from: owner}).should.be.fulfilled;
+
     LotFinished.logs[0].event.should.be.equal('LotFinished');
     LotFinished.logs[0].args.lotAddr.should.be.bignumber.equal(address);
     LotFinished.logs[0].args.lotIndex.should.be.bignumber.equal(0);
+    LotFinished.logs[0].args.finishTime.should.be.bignumber.equal(finishTime);
+
+    LotFinished.logs[1].event.should.be.equal('LotStarted');
+    LotFinished.logs[1].args.lotAddr.should.be.bignumber.equal(address);
+    LotFinished.logs[1].args.lotIndex.should.be.bignumber.equal(1);
+    LotFinished.logs[1].args.startTime.should.be.bignumber.equal(startTime);
   });
 
   it ('should finishLot without investments', async function () {
     const owner = await room.owner();
     const finishTime = latestTime() + duration.seconds(10);
-    await room.finishLot(finishTime, {from: owner}).should.be.fulfilled;
+    const startTime = latestTime() + duration.seconds(100);
+    await room.finishLot(finishTime, startTime,  {from: owner}).should.be.fulfilled;
   });
 
   it ('should not processRewards if not owner', async function () {
@@ -187,39 +205,40 @@ export default function (Room, wallets) {
     await room.processRewards([0], [30000000000000000], {from: owner}).should.be.fulfilled;
   });
 
-  it ('should create event TicketPayed', async function () {
+  it ('should create event TicketPaid', async function () {
     const owner = await room.owner();
     const address = await room.address;
     const minInvestLimit = await room.minInvestLimit();
     await room.sendTransaction({value: minInvestLimit, from: wallets[3]}).should.be.fulfilled;
-    const TicketPayed = await room.processRewards([0], [30000000000000000], {from: owner}).should.be.fulfilled;
-    TicketPayed.logs[0].event.should.be.equal('TicketPayed');
-    TicketPayed.logs[0].args.lotAddr.should.be.bignumber.equal(address);
-    TicketPayed.logs[0].args.lotIndex.should.be.bignumber.equal(0);
-    TicketPayed.logs[0].args.ticketNumber.should.be.bignumber.equal(0);
-    TicketPayed.logs[0].args.player.should.be.bignumber.equal(wallets[3]);
-    TicketPayed.logs[0].args.win.should.be.bignumber.equal(30000000000000000);
+    const TicketPaid = await room.processRewards([0], [30000000000000000], {from: owner}).should.be.fulfilled;
+
+    TicketPaid.logs[0].event.should.be.equal('TicketPaid');
+    TicketPaid.logs[0].args.lotAddr.should.be.bignumber.equal(address);
+    TicketPaid.logs[0].args.lotIndex.should.be.bignumber.equal(0);
+    TicketPaid.logs[0].args.ticketNumber.should.be.bignumber.equal(0);
+    TicketPaid.logs[0].args.player.should.be.bignumber.equal(wallets[3]);
+    TicketPaid.logs[0].args.winning.should.be.bignumber.equal(30000000000000000);
   });
 
-  it ('should create events TicketPayed if two players', async function () {
+  it ('should create events TicketPaid if two players', async function () {
     const owner = await room.owner();
     const address = await room.address;
     const minInvestLimit = await room.minInvestLimit();
     await room.sendTransaction({value: minInvestLimit, from: wallets[3]}).should.be.fulfilled;
     await room.sendTransaction({value: minInvestLimit, from: wallets[4]}).should.be.fulfilled;
-    const TicketPayed = await room.processRewards([0, 1], [30000000000000000, 30000000000000000], {from: owner}).should.be.fulfilled;
-    TicketPayed.logs[0].event.should.be.equal('TicketPayed');
-    TicketPayed.logs[0].args.lotAddr.should.be.bignumber.equal(address);
-    TicketPayed.logs[0].args.lotIndex.should.be.bignumber.equal(0);
-    TicketPayed.logs[0].args.ticketNumber.should.be.bignumber.equal(0);
-    TicketPayed.logs[0].args.player.should.be.bignumber.equal(wallets[3]);
-    TicketPayed.logs[0].args.win.should.be.bignumber.equal(30000000000000000);
-    TicketPayed.logs[1].event.should.be.equal('TicketPayed');
-    TicketPayed.logs[1].args.lotAddr.should.be.bignumber.equal(address);
-    TicketPayed.logs[1].args.lotIndex.should.be.bignumber.equal(0);
-    TicketPayed.logs[1].args.ticketNumber.should.be.bignumber.equal(1);
-    TicketPayed.logs[1].args.player.should.be.bignumber.equal(wallets[4]);
-    TicketPayed.logs[1].args.win.should.be.bignumber.equal(30000000000000000);
+    const TicketPaid = await room.processRewards([0, 1], [30000000000000000, 30000000000000000], {from: owner}).should.be.fulfilled;
+    TicketPaid.logs[0].event.should.be.equal('TicketPaid');
+    TicketPaid.logs[0].args.lotAddr.should.be.bignumber.equal(address);
+    TicketPaid.logs[0].args.lotIndex.should.be.bignumber.equal(0);
+    TicketPaid.logs[0].args.ticketNumber.should.be.bignumber.equal(0);
+    TicketPaid.logs[0].args.player.should.be.bignumber.equal(wallets[3]);
+    TicketPaid.logs[0].args.winning.should.be.bignumber.equal(30000000000000000);
+    TicketPaid.logs[1].event.should.be.equal('TicketPaid');
+    TicketPaid.logs[1].args.lotAddr.should.be.bignumber.equal(address);
+    TicketPaid.logs[1].args.lotIndex.should.be.bignumber.equal(0);
+    TicketPaid.logs[1].args.ticketNumber.should.be.bignumber.equal(1);
+    TicketPaid.logs[1].args.player.should.be.bignumber.equal(wallets[4]);
+    TicketPaid.logs[1].args.winning.should.be.bignumber.equal(30000000000000000);
   });
 
   it ('should processRewards correct', async function () {
