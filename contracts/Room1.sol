@@ -115,7 +115,7 @@ contract Room1 is Ownable {
   }
 
   constructor() public {
-    starts = 1548093600; //1542999600;
+    starts = 1548194400; //1542999600;
     ticketPrice = 1000000000000000000; //100000000000000000;
     feePercent = 30;
     feeWallet = 0x53F22b8f420317E7CDcbf2A180A12534286CB578;
