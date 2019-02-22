@@ -18,7 +18,7 @@ contract Room1 is Ownable {
 
   uint public LIMIT = 100;
 
-  uint public RANGE = 1000000000;
+  uint public RANGE = 100000;
 
   uint public PERCENT_RATE = 100;
 
@@ -219,7 +219,7 @@ contract Room1 is Ownable {
       uint dispersionK = MIN_DISPERSION_K;
 
       uint diffRangeLimit = 0;
- 
+
       if(limit > 0) {
         diffRangeLimit = limit.div(dispersionK);
         if(diffRangeLimit == 0) {
@@ -248,7 +248,7 @@ contract Room1 is Ownable {
           enlargedWinnerIndex = uint(keccak256(abi.encodePacked(number)))%enlargedRange;
           enlargedWinnerGenerated = true;
         } if(!enlargedWinnerPrepared && diffRangeCounter == enlargedWinnerIndex) {
-          number = uint(keccak256(abi.encodePacked(number)))%enlargedRange;
+          number = pow(uint(keccak256(abi.encodePacked(number)))%enlargedRange, 5);
           lot.tickets[index].number = lot.tickets[index].number.add(number);
           lot.summaryNumbers = lot.summaryNumbers.add(number);
           enlargedWinnerGenerated = true;
