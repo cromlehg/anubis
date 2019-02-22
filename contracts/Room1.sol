@@ -182,6 +182,15 @@ contract Room1 is Ownable {
     return lotProcessIndex < curLotIndex || (now >= getNotPayableTime(lotProcessIndex) && lot.state != LotState.Finished);
   }
 
+  function pow(uint number, uint count) private returns(uint) {
+    uint result = number;
+    if (count == 0) return 1;
+    for (uint i = 1; i < count; i++) {
+      result = result.mul(number);
+    }
+    return result;
+  }
+
   function prepareToRewardProcess() public onlyOwner started {
     Lot storage lot = lots[lotProcessIndex];
 
@@ -230,7 +239,8 @@ contract Room1 is Ownable {
 
       for(; index < limit; index++) {
 
-        number = uint(keccak256(abi.encodePacked(number)))%RANGE;
+//        number = uint(keccak256(abi.encodePacked(number)))%RANGE;
+        number = pow(uint(keccak256(abi.encodePacked(number)))%RANGE, 5);
         lot.tickets[index].number = number;
         lot.summaryNumbers = lot.summaryNumbers.add(number);
 
