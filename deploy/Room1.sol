@@ -138,9 +138,11 @@ contract Room1 is Ownable {
 
   using SafeMath for uint;
 
+  uint diffRangeCounter = 0;
+
   uint public LIMIT = 100;
 
-  uint public RANGE = 1000000000;
+  uint public RANGE = 100000;
 
   uint public PERCENT_RATE = 100;
 
@@ -159,6 +161,8 @@ contract Room1 is Ownable {
   uint public lotProcessIndex;
 
   uint public lastChangesIndex;
+
+  uint public MIN_DISPERSION_K = 10;
 
   address public feeWallet;
 
@@ -235,8 +239,8 @@ contract Room1 is Ownable {
   }
 
   constructor() public {
-    starts = 1542999600;
-    ticketPrice = 100000000000000000;
+    starts = 1548194400; //1542999600;
+    ticketPrice = 1000000000000000000; //100000000000000000;
     feePercent = 30;
     feeWallet = 0x53F22b8f420317E7CDcbf2A180A12534286CB578;
     interval = 3600;
@@ -302,6 +306,15 @@ contract Room1 is Ownable {
     return lotProcessIndex < curLotIndex || (now >= getNotPayableTime(lotProcessIndex) && lot.state != LotState.Finished);
   }
 
+  function pow(uint number, uint count) private returns(uint) {
+    uint result = number;
+    if (count == 0) return 1;
+    for (uint i = 1; i < count; i++) {
+      result = result.mul(number);
+    }
+    return result;
+  }
+
   function prepareToRewardProcess() public onlyOwner started {
     Lot storage lot = lots[lotProcessIndex];
 
@@ -327,10 +340,51 @@ contract Room1 is Ownable {
 
       number = block.number;
 
+      uint dispersionK = MIN_DISPERSION_K;
+
+      uint diffRangeLimit = 0;
+
+      if(limit > 0) {
+        diffRangeLimit = limit.div(dispersionK);
+        if(diffRangeLimit == 0) {
+          diffRangeLimit = 1;
+        }
+      }
+
+      diffRangeCounter = 0;
+
+      uint enlargedRange = RANGE.mul(dispersionK);
+
+      bool enlargedWinnerGenerated = false;
+
+      bool enlargedWinnerPrepared = false;
+
+      uint enlargedWinnerIndex = 0;
+
       for(; index < limit; index++) {
-        number = uint(keccak256(abi.encodePacked(number)))%RANGE;
+
+//        number = uint(keccak256(abi.encodePacked(number)))%RANGE;
+        number = pow(uint(keccak256(abi.encodePacked(number)))%RANGE, 5);
         lot.tickets[index].number = number;
         lot.summaryNumbers = lot.summaryNumbers.add(number);
+
+        if(!enlargedWinnerGenerated) {
+          enlargedWinnerIndex = uint(keccak256(abi.encodePacked(number)))%enlargedRange;
+          enlargedWinnerGenerated = true;
+        } if(!enlargedWinnerPrepared && diffRangeCounter == enlargedWinnerIndex) {
+          number = pow(uint(keccak256(abi.encodePacked(number)))%enlargedRange, 5);
+          lot.tickets[index].number = lot.tickets[index].number.add(number);
+          lot.summaryNumbers = lot.summaryNumbers.add(number);
+          enlargedWinnerGenerated = true;
+        }
+
+        if(diffRangeCounter == diffRangeLimit) {
+          diffRangeCounter = 0;
+          enlargedWinnerPrepared = false;
+          enlargedWinnerGenerated = false;
+        }
+
+        diffRangeCounter++;
       }
 
       if(index == lot.ticketsCount) {
