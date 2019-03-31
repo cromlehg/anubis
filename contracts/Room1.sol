@@ -115,12 +115,12 @@ contract Room1 is Ownable {
   }
 
   constructor() public {
-    starts = 1548194400; //1542999600;
-    ticketPrice = 1000000000000000000; //100000000000000000;
-    feePercent = 30;
-    feeWallet = 0x53F22b8f420317E7CDcbf2A180A12534286CB578;
-    interval = 3600;
-    uint fullDuration = 7200;
+    starts = 1554026400;
+    ticketPrice = 10000000000000000;
+    feePercent = 10;
+    feeWallet = 0x53f22b8f420317e7cdcbf2a180a12534286cb578;
+    interval = 1800;
+    uint fullDuration = 3600;
     duration = fullDuration.sub(interval);
     emit ParametersUpdated(0, feeWallet, feePercent, starts, duration, interval, ticketPrice);
   }
@@ -239,7 +239,6 @@ contract Room1 is Ownable {
 
       for(; index < limit; index++) {
 
-//        number = uint(keccak256(abi.encodePacked(number)))%RANGE;
         number = pow(uint(keccak256(abi.encodePacked(number)))%RANGE, 5);
         lot.tickets[index].number = number;
         lot.summaryNumbers = lot.summaryNumbers.add(number);
